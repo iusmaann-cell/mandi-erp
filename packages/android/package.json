@@ -1,0 +1,10 @@
+{
+  "name": "@mandi/android",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Capacitor shell for the Android app (filled by BC-10, BC-48)",
+  "type": "module",
+  "sideEffects": false,
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" }
+}

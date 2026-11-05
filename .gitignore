@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build-output/
+coverage/
+test-results/
+playwright-report/
+.stryker-tmp/
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Not part of the code repository (document 10, section 2.4): these live in the Claude Project.
+# The build chats keep working copies here and deliver changed ones next to each zip.
+/planning/
+/build/
+/testing/
+/outputs/

@@ -1,0 +1,34 @@
+# The nightly stage (document 09, section 4.3): the commit stage in long form.
+# SKELETON until BC-05 to BC-09 add the reference-model long run, the full simulator run, the network
+# fault tests and mutation testing. Today it runs the commit stage with more property-test runs and
+# writes the software bill of materials (SEC-2).
+name: nightly
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      FC_SEED: ${{ github.run_id }}
+      FC_RUNS: "2000"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.21.1
+      - run: npm ci
+      - run: npm run check
+      - run: npm run sbom
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: nightly-report
+          path: build-output/
+          if-no-files-found: ignore

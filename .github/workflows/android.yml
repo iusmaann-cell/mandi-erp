@@ -1,0 +1,22 @@
+# The Android build (document 09, section 4.3). SKELETON until BC-10 creates the Capacitor shell:
+# the job runs, and says plainly that there is nothing to build yet.
+name: android
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  android-skeleton:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: node tools/ci/android-build.mjs

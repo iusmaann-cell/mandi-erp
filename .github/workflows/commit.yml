@@ -1,0 +1,43 @@
+# The commit pipeline (document 09, section 4.3, "On every commit"): Linux and Windows.
+name: commit
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: commit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global npm@11.21.1
+      - run: npm ci
+      - run: npm run check
+      - name: Install the browser for screen tests
+        run: npx playwright install --with-deps chromium
+        if: runner.os == 'Linux'
+      - name: Install the browser for screen tests
+        run: npx playwright install chromium
+        if: runner.os == 'Windows'
+      - run: npm run e2e
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: report-${{ matrix.os }}
+          path: |
+            build-output/
+            test-results/
+          if-no-files-found: ignore

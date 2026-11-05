@@ -1,0 +1,10 @@
+{
+  "name": "@mandi/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure engine: posting, FIFO, numbering, validation, and the runtime ports (clock, randomness, ids). No database, no screens, no network",
+  "type": "module",
+  "sideEffects": false,
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@mandi/numeric",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Integer money, quantity, cost, rate and percentage arithmetic (filled by BC-02)",
+  "type": "module",
+  "sideEffects": false,
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" }
+}

@@ -1,0 +1,33 @@
+// Which permission module guards each page. "accounts" is administrators only.
+export const PAGE_MODULE = {
+  dashboard: "dashboard",
+  "bi-dashboard": "bi_dashboard",
+  vendors: "vendors",
+  items: "items",
+  warehouses: "warehouses",
+  "purchase-orders": "purchase_orders",
+  grn: "grn",
+  stock: "stock",
+  "stock-adjustments": "stock_adjustments",
+  "stock-transfers": "stock_transfers",
+  boms: "boms",
+  "production-orders": "production_orders",
+  customers: "customers",
+  "toll-intake": "toll_intake",
+  "toll-delivery": "toll_delivery",
+  "commission-invoices": "commission_invoices",
+  distributors: "distributors",
+  "sales-orders": "sales_orders",
+  "sales-dispatch": "sales_dispatch",
+  "sales-invoices": "sales_invoices",
+  expenses: "expenses",
+  reports: "reports",
+  employees: "employees",
+  attendance: "attendance",
+  "salary-advances": "salary_advances",
+  payroll: "payroll",
+  "invoice-settings": "invoice_settings",
+  accounts: "__admin__",
+};
+
+export const PAGE_ORDER = Object.keys(PAGE_MODULE);

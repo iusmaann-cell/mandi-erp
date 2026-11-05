@@ -1,0 +1,7 @@
+# Same bytes on Windows and Linux: golden hashes, lint and the secret scan must not see CRLF.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary
+*.woff2 binary
