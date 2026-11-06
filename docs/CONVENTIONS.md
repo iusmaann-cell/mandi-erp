@@ -101,6 +101,9 @@ must be empty. A test builds deliberately damaged schemas to show the check fail
 
 **Testing against both databases.** `import { startTestPostgres, createTestDatabase, seedWorld } from "@mandi/data/testing"`. The tests
 start a real PostgreSQL (17.10) from the `embedded-postgres` npm binaries and a SQLite database, and run the same suite on both.
+The PostgreSQL half runs on Linux and macOS and is skipped, with a loud message, on Windows (PostgreSQL only ever runs in the
+Linux cloud container); `MANDI_TEST_POSTGRES=on` forces it on, `=off` skips it anywhere. If the server cannot start, the error
+shows the server's own output.
 
 ## Time, randomness and ids (TR-1, TR-2)
 

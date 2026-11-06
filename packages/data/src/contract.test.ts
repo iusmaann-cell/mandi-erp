@@ -8,7 +8,7 @@ import { catalogueOf, MIGRATIONS } from "./migrations/scripts";
 import { MIGRATION_2_EDITED, WITH_BAD_SCHEMA, WITH_TEST_TABLES } from "./migrations/test-fixtures";
 import { checkSchema, diffSnapshots } from "./schema-test";
 import type { DataStore } from "./store";
-import { createTestDatabase, seedWorld, startTestPostgres, type TestDatabase, type TestPostgres } from "./testing";
+import { createTestDatabase, postgresTestsEnabled, seedWorld, startTestPostgres, type TestDatabase, type TestPostgres } from "./testing";
 import type { UntypedDb } from "./model";
 import { decodeValue, PHYSICAL_TYPE, type DbKind } from "./types";
 import { decodeRow } from "./rows";
@@ -17,16 +17,25 @@ import { decodeRow } from "./rows";
  * Document 09, TL-4: the same tests on SQLite and on a real PostgreSQL server. A rule that works on
  * one and not the other fails here (failure mode F-5).
  */
-const KINDS: readonly DbKind[] = ["sqlite", "postgres"];
-let pg: TestPostgres;
+const WITH_POSTGRES = postgresTestsEnabled();
+const KINDS: readonly DbKind[] = WITH_POSTGRES ? ["sqlite", "postgres"] : ["sqlite"];
+if (!WITH_POSTGRES) {
+  // loud on purpose: a skipped half must never pass for a green one
+  console.warn("[mandi] PostgreSQL contract tests are SKIPPED on this machine (set MANDI_TEST_POSTGRES=on to run them). Only the SQLite half ran.");
+}
+let pg: TestPostgres | undefined;
 const opened: DataStore[] = [];
 
 beforeAll(async () => {
-  pg = await startTestPostgres();
+  if (WITH_POSTGRES) pg = await startTestPostgres();
 }, 180_000);
 afterAll(async () => {
-  for (const store of opened) await store.close();
-  await pg.stop();
+  // always stop the server, even if closing a store fails
+  try {
+    for (const store of opened) await store.close();
+  } finally {
+    await pg?.stop();
+  }
 });
 
 const database = (kind: DbKind): Promise<TestDatabase> => createTestDatabase(kind, pg);
@@ -176,7 +185,7 @@ describe.each(KINDS)("the schema test on %s (document 06, section 12)", (kind) =
   });
 });
 
-describe("one schema on two databases (document 06, D-12)", () => {
+describe.skipIf(!WITH_POSTGRES)("one schema on two databases (document 06, D-12)", () => {
   it("SQLite and PostgreSQL have identical schemas: same tables, columns, logical types, keys, indexes, triggers and checks", async () => {
     const a = await (await fresh("sqlite")).readSchema();
     const b = await (await fresh("postgres")).readSchema();
@@ -488,7 +497,7 @@ describe.each(KINDS)("values read back the same way (physical type map) on %s", 
   });
 });
 
-describe("two databases, the same data (TL-4)", () => {
+describe.skipIf(!WITH_POSTGRES)("two databases, the same data (TL-4)", () => {
   it("the same inserts read back as identical canonical rows on SQLite and PostgreSQL", async () => {
     const tables = ["owner_groups", "nodes", "devices", "companies", "locations", "fiscal_years"] as const;
     const read = async (kind: DbKind) => {

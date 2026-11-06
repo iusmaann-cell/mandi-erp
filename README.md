@@ -13,7 +13,7 @@ npm run sbom              # software bill of materials to build-output/sbom.cdx.
 npm run mutation:numeric  # mutation testing of @mandi/numeric (minutes; nightly, not per commit)
 ```
 
-Needs Node 22.13 or newer and npm 11.21.1 (`npm install --global npm@11.21.1`; npm 10 fails on this
+Needs Node 22.16 or newer (the built-in SQLite needs it; `.nvmrc` pins 22.16.0, the version CI runs) and npm 11.21.1 (`npm install --global npm@11.21.1`; npm 10 fails on this
 dependency tree). Read `docs/BUILD_LOG.md` first: it says what exists and what comes next, and
 `docs/CONVENTIONS.md` for the rules the code must follow.
 

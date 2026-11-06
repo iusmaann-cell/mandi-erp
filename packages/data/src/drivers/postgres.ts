@@ -31,11 +31,24 @@ const types = {
 export interface PostgresConnection {
   readonly connectionString: string;
   readonly max?: number;
+  /**
+   * Called when an idle connection is lost (the server restarted, a failover, a network cut). The pool
+   * discards that connection and opens a new one for the next query, so this is for logging only.
+   */
+  readonly onIdleError?: (error: Error) => void;
 }
 
-/** A connection pool that reads in canonical forms and always works in UTC. */
+/**
+ * A connection pool that reads in canonical forms and always works in UTC. node-postgres requires an
+ * 'error' listener on the pool: without one, a connection the server drops while idle raises an
+ * uncaught exception and ends the process.
+ */
 export function createPostgresPool(connection: PostgresConnection): pg.Pool {
-  return new pg.Pool({ connectionString: connection.connectionString, max: connection.max ?? 4, options: "-c timezone=UTC", types });
+  const pool = new pg.Pool({ connectionString: connection.connectionString, max: connection.max ?? 4, options: "-c timezone=UTC", types });
+  pool.on("error", (error) => {
+    connection.onIdleError?.(error);
+  });
+  return pool;
 }
 
 export function postgresDialect(pool: pg.Pool): PostgresDialect {

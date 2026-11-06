@@ -62,6 +62,19 @@ function freePort(): Promise<number> {
   });
 }
 
+/**
+ * Whether the PostgreSQL half of the tests runs here. PostgreSQL only ever runs in the Linux cloud
+ * container (document 05, section 11), and document 09 TL-4 puts its contract tests in the Linux
+ * pipeline, so the default is on everywhere except Windows. Set MANDI_TEST_POSTGRES=on to run it on
+ * Windows too (it shows the server's own output if it cannot start), or =off to skip it anywhere.
+ */
+export function postgresTestsEnabled(): boolean {
+  const setting = process.env["MANDI_TEST_POSTGRES"];
+  if (setting === "on") return true;
+  if (setting === "off") return false;
+  return process.platform !== "win32";
+}
+
 export interface TestPostgres {
   /** A new empty database on the server, and a store-ready pool on it. */
   createDatabase(name: string): Promise<{ connectionString: string }>;
@@ -72,6 +85,11 @@ export async function startTestPostgres(): Promise<TestPostgres> {
   linkLibraries();
   const port = await freePort();
   const databaseDir = mkdtempSync(join(tmpdir(), "mandi-pg-"));
+  const output: string[] = [];
+  const keep = (message: unknown): void => {
+    output.push(typeof message === "string" ? message : JSON.stringify(message));
+    if (output.length > 200) output.shift();
+  };
   const server = new EmbeddedPostgres({
     databaseDir,
     port,
@@ -80,11 +98,18 @@ export async function startTestPostgres(): Promise<TestPostgres> {
     persistent: false,
     createPostgresUser: process.getuid?.() === 0, // PostgreSQL will not run as root (a sandbox may)
     postgresFlags: ["-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off"], // tests only
-    onLog: () => undefined,
-    onError: () => undefined,
+    onLog: keep,
+    onError: keep,
   });
-  await server.initialise();
-  await server.start();
+  try {
+    await server.initialise();
+    await server.start();
+  } catch (error) {
+    // never hide why the server would not start: say where, and show what it printed
+    const reason = error instanceof Error ? error.message : JSON.stringify(error);
+    rmSync(databaseDir, { recursive: true, force: true });
+    throw new Error(`could not start the test PostgreSQL on ${process.platform}/${process.arch} with Node ${process.version}: ${reason}\n--- server output (last lines) ---\n${output.slice(-40).join("\n")}`, { cause: error });
+  }
   return {
     async createDatabase(name: string) {
       await server.createDatabase(name);

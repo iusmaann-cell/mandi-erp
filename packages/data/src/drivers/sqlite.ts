@@ -11,11 +11,18 @@ const bind = (parameters: readonly unknown[]): (string | bigint | number | null)
     return v as string | bigint | number | null;
   });
 
+/** The oldest Node whose built-in SQLite has StatementSync.columns(), which tells a query that returns rows from one that does not. */
+export const MINIMUM_NODE_FOR_SQLITE = "22.16.0";
+
 class NodeSqliteDatabase implements SqliteDatabase {
   readonly #db: DatabaseSync;
 
   constructor(path: string) {
     this.#db = new DatabaseSync(path);
+    if (typeof this.#db.prepare("PRAGMA user_version").columns !== "function") {
+      this.#db.close();
+      throw new Error(`this Node (${process.version}) has no StatementSync.columns(): Node ${MINIMUM_NODE_FOR_SQLITE} or newer is needed for the built-in SQLite`);
+    }
     for (const pragma of PRAGMAS) this.#db.exec(pragma);
   }
 

@@ -96,7 +96,7 @@ See `README.md`. In short: `npm ci`, then `npm run check`.
 - A query without a company context cannot be made; the installation handle refuses company tables; each company sees only its own rows (SELECT, UPDATE, DELETE, joins, left-join semantics, subqueries, upserts); another company's company_id is refused; the composite foreign key refuses a row that points at another company's row.
 - Migrations: applied once; re-run changes nothing; a later migration is applied alone; a changed script, an edited checksum, a renamed migration, a gap, and a database newer than the program are all refused. Migration 1's checksum is pinned for both databases.
 - Values: 64-bit edge round-trips as bigint and one beyond is refused; timestamps, dates, ids, JSON and flags come back canonical; the same inserts read back as identical rows on both databases.
-- NOT done here: the GitHub run of this suite on Linux and Windows (the embedded PostgreSQL package has Linux, macOS and Windows binaries; not run on GitHub or macOS yet).
+- The first GitHub run of this suite was red; see "BC-03 follow-up" below.
 
 **Decisions of detail**
 - **Installation-scope tables (X-14, DM-26).** Document 06 listed `nodes` and `devices` (and `owner_groups`) without a company but required `company_id` on every business table and a composite foreign key everywhere. Decided: those three have no `company_id`; company tables refer to them with plain foreign keys. Amended in document 06 (v0.3b) and 00.
@@ -118,5 +118,26 @@ See `README.md`. In short: `npm ci`, then `npm run check`.
 
 **Open stops**
 - Usman: the BC-01 and BC-02 open stops stand (first GitHub run on Linux and Windows; confirm rounding of negatives with the accountant). The BC-03 suite starts a real PostgreSQL, so the first GitHub run is also its first run there.
+
+**Next:** BC-04 Bundles and the apply function.
+
+### BC-03 follow-up: the first GitHub run was red (2026-11-06)
+
+The BC-03 push failed both jobs of the `commit` workflow. Read from the run pages on GitHub (the log itself needs a sign-in):
+
+**What I found**
+- **Linux:** every SQLite test failed with `statement.columns is not a function`. The pipeline runs the Node pinned in `.nvmrc` (22.13.0); I had written the SQLite adapter and run everything on the build chat's Node 22.23, where `StatementSync.columns()` exists. It was added in Node 22.16. Reproduced on Node 22.13.0 and fixed. My mistake: the BC-03 "rebuild from the zip" rehearsal used the sandbox's newer Node, not the pinned one. From now on a package is rehearsed on the pinned Node, and as a non-root user.
+- **Windows:** the whole contract file failed in its setup step (starting PostgreSQL), and the real reason was hidden behind a follow-up error. I could not see the log and could not reproduce Windows here. NOT fixed, only made diagnosable (below). Whether the SQLite half passes on Windows is not yet known: it never got to run.
+- **A real defect found while reproducing:** with all tests passing, vitest still exited 1 because a PostgreSQL connection that the server dropped while idle raised an uncaught exception. node-postgres requires an `'error'` listener on the pool; `createPostgresPool` had none. In the cloud that would end the process on any database restart or failover. Fixed in the product code (`createPostgresPool` always listens; `onIdleError` is for logging), with tests.
+
+**What changed**
+- `.nvmrc` is 22.16.0 and `engines` says Node >= 22.16.0. The SQLite adapter checks for `columns()` and says so in plain words if it is missing.
+- `createPostgresPool` has the pool error listener. The test teardown always stops the server even if closing a store fails.
+- `startTestPostgres` keeps the server's output and, if the server cannot start, throws an error that includes the platform, the Node version and the last 40 lines of server output.
+- PostgreSQL half of the contract tests: default on Linux and macOS, SKIPPED on Windows with a loud console message, because PostgreSQL only ever runs in the Linux cloud container and document 09 TL-4 puts its contract tests in the Linux pipeline. `MANDI_TEST_POSTGRES=on` forces it on Windows to see the real error. This is a reduction of what Windows CI proves, made because I could not diagnose it without the log; it should be revisited once the log is read.
+
+**Proof after the fix:** 217 data tests on Node 22.16.0, run as root and as a non-root user (three runs each, all exit 0); the whole pipeline on Node 22.16.0: 631 tests, green. The Windows-style skipped mode runs 171 tests and skips 3 suites with the warning. NOT proven: the GitHub run of this fix on Linux and Windows.
+
+**CI evidence for BC-01 and BC-02 (read from GitHub, 2026-11-06):** both `commit` runs completed successfully for `check (ubuntu-latest)` (2m13s, 2m05s) and `check (windows-latest)` (2m44s, 3m03s), including the Playwright browser tests; the `android` skeleton runs succeeded. The BC-01 open stop is closed.
 
 **Next:** BC-04 Bundles and the apply function.
