@@ -28,9 +28,43 @@ Node-only API there fails the typecheck. Tests sit beside the code as `*.test.ts
 | `mandi/no-raw-sql` | SQL text outside `*/migrations/*`; `sql.raw`; importing a database driver or Kysely outside `packages/data` | SEC-5 |
 | `mandi/company-context` | query-builder calls (`selectFrom`, `insertInto`, ...) outside `packages/data`. BC-03 adds the runtime refusal | doc 05 §12, SEC-19 |
 | `mandi/no-ambient-time-random` | `Date.now`, `new Date()`, `performance.now`, `Math.random`, `crypto.randomUUID/getRandomValues`, timers, outside `system-clock.ts` and `system-random.ts` | TR-1, TR-2 |
+| `mandi/no-money-arithmetic` | `* / % **` (and compound forms) on a Paisa, Milli, Micro, R4 or P4 value anywhere except `@mandi/numeric`. Needs type information | doc 05 §10, N-7 |
 | `mandi/test-hook` | controls in `ui` and `shell` without a stable `data-testid`, a bad id format, click handlers on non-controls without `role` | TR-9 |
 
 Fractions in a test on purpose (to check that something refuses them): build them from text, e.g. `Number("0.5")`.
+
+## Numbers (`@mandi/numeric`, document 05 section 10)
+
+Money, quantity, cost, rate and percentage are branded bigints: `Paisa` (0.01 rupee), `Milli` (0.001 of a base unit),
+`Micro` (0.000001 rupee per base unit), `R4` (rate with 4 decimals), `P4` (percentage with 4 decimals; 18% = 180000).
+Build them with `paisa(...)`, `milli(...)` and the others; every value is checked against signed 64 bits and an
+overflow is refused with a `NumericError` (code `overflow`), never wrapped. Add, subtract and compare with `add`,
+`sub`, `sum`, `compare`. Everything that multiplies or divides lives in the numeric package and is rounded once, at
+the end, by `divRound`:
+
+| Function | What |
+|---|---|
+| `lineAmount(qty, rate, rateUnit?)` | quantity x rate, the rate quoted per a rate unit (R-3) |
+| `costOf(qty, unitCost)` | cost of a quantity at a unit cost |
+| `unitCostMicro(total, qty)` | unit cost of a quantity bought for a total |
+| `percentOf(amount, pct)` | a percentage of an amount |
+| `consumptionCost(lot, qty, unitCost)` | the last consumption of a lot takes the remaining value (document 03, 2) |
+| `factor`, `toBase`, `fromBase`, `isExact...` | trading units (R-2) with exact fractions |
+| `toWire`, `fromWire` | whole numbers as canonical decimal strings in bundles and the API (PB-18) |
+| `parseScaled`, `formatScaled`, `formatPaisa` ... | typed input and screen text: lakh or million grouping, Western or Urdu digits (document 07, 9.3, 9.4) |
+
+**Rounding** is half away from zero: half up for positive amounts, the mirror image for negative ones (document 06,
+X-13), so a reversal offsets the original to the paisa. **Parsing** refuses anything that could be read two ways
+(`12,34`, `125,5`, `0,500`) and anything that would silently lose digits (too many decimals).
+**N-3:** `runNumericDigest(random, count)` is the cross-platform digest; the Node value for the gate run is pinned in
+`packages/core/src/numeric-digest.test.ts` and BC-10 and BC-13 must print the same digest in the Android WebView and Electron.
+
+## Mutation testing (document 09, section 5.5)
+
+`npm run mutation:numeric` makes small deliberate changes to `@mandi/numeric` and checks that the tests fail; the run
+fails below 85% killed. Use Stryker 10.1.1 or newer: 10.0.0 does not work with Vitest 5 (every mutant survives).
+To run it in slices (a short-lived workspace cannot run it in one go): `MUTATE_FILES=parse.ts,format.ts MUTATION_REPORT=build-output/mutation/a.json MUTATION_TIMEOUT_MS=6000 npx stryker run stryker.numeric.config.mjs`
+(`sha256.ts:1-62` style line ranges also work), then `npm run mutation:summary -- build-output/mutation/*.json --survivors`.
 
 ## Time, randomness and ids (TR-1, TR-2)
 

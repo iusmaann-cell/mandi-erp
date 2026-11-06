@@ -65,6 +65,13 @@ export default tseslint.config(
       "mandi/no-ambient-time-random": ["error", { allowFiles: REAL_TIME_AND_RANDOM }],
     },
   },
+  // N-7: only @mandi/numeric may multiply or divide money, quantity, cost, rate or percentage.
+  {
+    files: srcOf([...ENGINE_PACKAGES, ...SCREEN_PACKAGES]),
+    ignores: ["packages/numeric/**"],
+    plugins: { mandi },
+    rules: { "mandi/no-money-arithmetic": "error" },
+  },
   {
     files: srcOf(ENGINE_PACKAGES),
     plugins: { mandi },

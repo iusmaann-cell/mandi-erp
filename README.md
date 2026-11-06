@@ -10,6 +10,7 @@ npm run check:offline     # the same without the dependency audit (needs no netw
 npm test                  # Vitest, all packages and tools
 npm run e2e               # Playwright screen tests (needs: npx playwright install chromium)
 npm run sbom              # software bill of materials to build-output/sbom.cdx.json
+npm run mutation:numeric  # mutation testing of @mandi/numeric (minutes; nightly, not per commit)
 ```
 
 Needs Node 22.13 or newer and npm 11.21.1 (`npm install --global npm@11.21.1`; npm 10 fails on this

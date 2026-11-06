@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import companyContext from "./rules/company-context.mjs";
 import noAmbientTimeRandom from "./rules/no-ambient-time-random.mjs";
 import noFloatingPoint from "./rules/no-floating-point.mjs";
+import noMoneyArithmetic from "./rules/no-money-arithmetic.mjs";
 import noRawSql, { looksLikeSql } from "./rules/no-raw-sql.mjs";
 import testHook from "./rules/test-hook.mjs";
 
@@ -142,6 +143,13 @@ tester.run("no-ambient-time-random", noAmbientTimeRandom, {
   ],
 });
 
+// Without type information the rule cannot know a type, so it stays silent; the typed behaviour is proved
+// with the real tools in tools/ci/pipeline-proof.test.mjs.
+tester.run("no-money-arithmetic", noMoneyArithmetic, {
+  valid: ["const a = x * 2;", "const a = b / c;", "a *= 3;"],
+  invalid: [],
+});
+
 jsx.run("test-hook", testHook, {
   valid: [
     "const a = <button data-testid=\"UI-01-01.signin.submit\">OK</button>;",
@@ -168,10 +176,10 @@ jsx.run("test-hook", testHook, {
 });
 
 describe("the plugin", () => {
-  it("registers all five rules under the name mandi", async () => {
+  it("registers all six rules under the name mandi", async () => {
     const { default: plugin } = await import("./index.mjs");
     expect(plugin.meta.name).toBe("mandi");
-    expect(Object.keys(plugin.rules).sort()).toEqual(["company-context", "no-ambient-time-random", "no-floating-point", "no-raw-sql", "test-hook"]);
+    expect(Object.keys(plugin.rules).sort()).toEqual(["company-context", "no-ambient-time-random", "no-floating-point", "no-money-arithmetic", "no-raw-sql", "test-hook"]);
     expect(expect.anything()).toBeDefined();
   });
 });

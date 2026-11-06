@@ -22,6 +22,8 @@ const files = {
   "__proof_sql.ts": `export const q = ${JSON.stringify(["SELECT", "*", "FROM", "items"].join(" "))};\n`,
   "__proof_clock.ts": "export const now = Date.now();\n",
   "__proof_company.ts": 'export function all(db: { selectFrom(table: string): unknown }): unknown {\n  return db.selectFrom("items");\n}\n',
+  "__proof_money.ts": 'import { type Paisa } from "@mandi/numeric";\nexport function doubled(a: Paisa): bigint {\n  return a * 2n;\n}\n',
+  "__proof_money_clean.ts": 'import { add, type Paisa } from "@mandi/numeric";\nexport function doubled(a: Paisa): Paisa {\n  return add(a, a);\n}\n',
   "__proof_secret.ts": `export const cloudKey = ${JSON.stringify(awsKey)};\n`,
 };
 const path = (name) => `${SRC}/${name}`;
@@ -48,8 +50,9 @@ describe("the commit pipeline fails the build on each deliberate violation (BC-0
 
   it("lint fails every planted violation with the rule that is meant to catch it", () => {
     cleanUp();
-    plant(planted.filter((n) => n !== "__proof_clean.ts" && n !== "__proof_secret.ts"));
-    const r = run(bin("eslint", "bin", "eslint.js"), ["--format", "json", ...planted.filter((n) => n.startsWith("__proof_") && !["__proof_clean.ts", "__proof_secret.ts"].includes(n)).map(path)]);
+    const violating = planted.filter((n) => !["__proof_clean.ts", "__proof_money_clean.ts", "__proof_secret.ts"].includes(n));
+    plant([...violating, "__proof_money_clean.ts"]);
+    const r = run(bin("eslint", "bin", "eslint.js"), ["--format", "json", ...violating.map(path), path("__proof_money_clean.ts")]);
     expect(r.status).toBe(1);
     const byFile = new Map(JSON.parse(r.stdout).map((f) => [f.filePath.replaceAll("\\", "/").split("/").pop(), f.messages.map((m) => m.ruleId)]));
     expect(byFile.get("__proof_float.ts")).toContain("mandi/no-floating-point");
@@ -57,6 +60,8 @@ describe("the commit pipeline fails the build on each deliberate violation (BC-0
     expect(byFile.get("__proof_sql.ts")).toContain("mandi/no-raw-sql");
     expect(byFile.get("__proof_clock.ts")).toContain("mandi/no-ambient-time-random");
     expect(byFile.get("__proof_company.ts")).toContain("mandi/company-context");
+    expect(byFile.get("__proof_money.ts")).toContain("mandi/no-money-arithmetic"); // N-7: money multiplied outside the numeric module
+    expect(byFile.get("__proof_money_clean.ts")).toEqual([]); // using the numeric module's own functions is fine
   });
 
   it("the secret scan fails a committed fake secret and names the file", () => {
