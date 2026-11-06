@@ -1,2 +1,14 @@
-// @mandi/data: placeholder until its work package fills it (see docs/BUILD_LOG.md).
-export const PACKAGE_NAME = "@mandi/data";
+export { Catalogue, col, dflt, table, type Check, type Column, type ColumnDefault, type ColumnReference, type IndexDef, type TableClass, type TableDef, type TableScope, type TableSpec } from "./catalogue/define";
+export * as platform from "./catalogue/platform";
+export { CompanyContextError } from "./errors";
+export { withApplyGuard } from "./guard";
+export { readSchema, type ColumnSnapshot, type ForeignKeySnapshot, type IndexSnapshot, type SchemaSnapshot, type TableSnapshot, type TriggerSnapshot } from "./introspection/snapshot";
+export { appendOnlyTriggers, createTable, foreignKeysOf, guardTriggers, indexesOf } from "./migrations/ddl";
+export { checksumOf, migrate, MigrationError, type MigrationErrorCode, type MigrationResult } from "./migrations/runner";
+export { catalogueOf, MIGRATIONS, statementsOf, type Migration } from "./migrations/scripts";
+export type * from "./model";
+export { decodeRow, encodeRow } from "./rows";
+export { checkSchema, diffSnapshots, type SchemaRule, type Violation } from "./schema-test";
+export { createPostgresStore, createSqliteStore, type CompanyContext, type DataStore, type InstallationDb, type ScopedDb, type PostgresStoreOptions, type SqliteStoreOptions } from "./store";
+export { createPostgresPool, type PostgresConnection } from "./drivers/postgres";
+export { CANONICAL_TIMESTAMP, decodeValue, encodeValue, FORBIDDEN_PHYSICAL_TYPES, normalizeTimestamp, PHYSICAL_TYPE, type DbKind, type LogicalType } from "./types";

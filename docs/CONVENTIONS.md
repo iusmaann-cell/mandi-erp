@@ -25,7 +25,7 @@ Node-only API there fails the typecheck. Tests sit beside the code as `*.test.ts
 | Rule | What it forbids | Source |
 |------|-----------------|--------|
 | `mandi/no-floating-point` | decimal literals, `parseFloat`, `toFixed`, `Math` functions other than min, max, abs, sign, trunc, imul, clz32, and division unless both sides are bigint. Strict in numeric, core, data, sync, server, testkit; screen packages skip the literal and division checks only | doc 05 §10 |
-| `mandi/no-raw-sql` | SQL text outside `*/migrations/*`; `sql.raw`; importing a database driver or Kysely outside `packages/data` | SEC-5 |
+| `mandi/no-raw-sql` | SQL text outside `*/migrations/*` (and the two files listed in `eslint.config.mjs`: `packages/data/src/drivers/` and `packages/data/src/introspection/`); `sql.raw`; importing a database driver or Kysely outside `packages/data` | SEC-5 |
 | `mandi/company-context` | query-builder calls (`selectFrom`, `insertInto`, ...) outside `packages/data`. BC-03 adds the runtime refusal | doc 05 §12, SEC-19 |
 | `mandi/no-ambient-time-random` | `Date.now`, `new Date()`, `performance.now`, `Math.random`, `crypto.randomUUID/getRandomValues`, timers, outside `system-clock.ts` and `system-random.ts` | TR-1, TR-2 |
 | `mandi/no-money-arithmetic` | `* / % **` (and compound forms) on a Paisa, Milli, Micro, R4 or P4 value anywhere except `@mandi/numeric`. Needs type information | doc 05 §10, N-7 |
@@ -65,6 +65,42 @@ X-13), so a reversal offsets the original to the paisa. **Parsing** refuses anyt
 fails below 85% killed. Use Stryker 10.1.1 or newer: 10.0.0 does not work with Vitest 5 (every mutant survives).
 To run it in slices (a short-lived workspace cannot run it in one go): `MUTATE_FILES=parse.ts,format.ts MUTATION_REPORT=build-output/mutation/a.json MUTATION_TIMEOUT_MS=6000 npx stryker run stryker.numeric.config.mjs`
 (`sha256.ts:1-62` style line ranges also work), then `npm run mutation:summary -- build-output/mutation/*.json --survivors`.
+
+## The data layer (`@mandi/data`, documents 05 section 11 and 12, 06 sections 12 and 13)
+
+**One schema, described once.** Tables are data, in `src/catalogue/` (`table(...)`, `col.*`): class, scope, columns,
+checks, indexes. The standard columns of document 06, 2.3 are added by class. `src/migrations/ddl.ts` turns a table
+into SQL for SQLite or PostgreSQL; it is the only place SQL is written, and every identifier and enumeration value is
+checked against a strict pattern. Migrations are numbered scripts in `src/migrations/scripts.ts`: forward-only, each
+in its own transaction, recorded in `schema_migrations` with a SHA-256 checksum that is checked at every start. A
+changed script, an unknown migration, a renamed one or a gap stops the run. **Never edit an applied migration: add a
+new one.**
+
+**Scope.** Every table is `company` (has `company_id`, behind the wall), `installation` (owner groups, nodes, devices:
+no `company_id`; company tables refer to them with plain foreign keys, X-14) or `system` (`schema_migrations`,
+`apply_guard`). Foreign keys between company tables are composite with `company_id`; every company index starts with
+`company_id`; every company table has a unique (`company_id`, `id`).
+
+**Access.** There is no unscoped handle. `store.scoped({ companyId })` returns a query handle that rewrites every
+statement so it only sees and writes that company's rows (WHERE for main tables, ON for joined tables, inside
+subqueries and CTEs; INSERT fills or checks `company_id`; upserts cannot touch another company's row; `company_id`
+cannot be changed). `store.installation()` serves the installation and system tables and refuses company tables. Right and
+full joins, insert-from-select and MERGE on company tables are refused. Raw SQL cannot be analysed: the lint rule is its guard.
+
+**Immutability.** Class 1 tables get BEFORE UPDATE and BEFORE DELETE triggers that raise (and BEFORE TRUNCATE on
+PostgreSQL). Projection tables (class P) accept writes only while `apply_guard` is open: `withApplyGuard(trx, work)`,
+used only by `applyBundle`, inside a transaction.
+
+**Forms.** `decodeRow` and `encodeRow` (catalogue-driven) give every logical type one canonical form on both databases:
+ids lower-case UUID text, whole numbers bigint, flags boolean, dates `YYYY-MM-DD`, timestamps UTC to the millisecond,
+JSON canonical text (X-15). `encodeValue` refuses a timestamp, date or id that is not already canonical (PostgreSQL would
+accept `yesterday`).
+
+**Schema test.** `checkSchema(await store.readSchema(), catalogue)` must return no violations and `diffSnapshots(sqlite, postgres)`
+must be empty. A test builds deliberately damaged schemas to show the check fails; add a case there when you add a rule.
+
+**Testing against both databases.** `import { startTestPostgres, createTestDatabase, seedWorld } from "@mandi/data/testing"`. The tests
+start a real PostgreSQL (17.10) from the `embedded-postgres` npm binaries and a SQLite database, and run the same suite on both.
 
 ## Time, randomness and ids (TR-1, TR-2)
 

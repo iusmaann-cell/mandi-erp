@@ -7,7 +7,7 @@ Planning documents live in the Claude Project "Trading ERP for Mandi"; this repo
 npm ci                    # exact versions from package-lock.json; install scripts are off (.npmrc)
 npm run check             # typecheck, lint, secret scan, tests, dependency audit (the commit pipeline)
 npm run check:offline     # the same without the dependency audit (needs no network)
-npm test                  # Vitest, all packages and tools
+npm test                  # Vitest, all packages and tools (the data tests start a real PostgreSQL from the npm binaries)
 npm run e2e               # Playwright screen tests (needs: npx playwright install chromium)
 npm run sbom              # software bill of materials to build-output/sbom.cdx.json
 npm run mutation:numeric  # mutation testing of @mandi/numeric (minutes; nightly, not per commit)

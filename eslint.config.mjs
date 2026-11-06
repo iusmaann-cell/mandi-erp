@@ -60,7 +60,8 @@ export default tseslint.config(
     files: srcOf([...ENGINE_PACKAGES, ...SCREEN_PACKAGES]),
     plugins: { mandi },
     rules: {
-      "mandi/no-raw-sql": "error",
+      // SQL text only in migrations, plus two files that read or configure the database itself (document 08, SEC-5)
+      "mandi/no-raw-sql": ["error", { allowPaths: ["packages/data/src/introspection/", "packages/data/src/drivers/"] }],
       "mandi/company-context": "error",
       "mandi/no-ambient-time-random": ["error", { allowFiles: REAL_TIME_AND_RANDOM }],
     },

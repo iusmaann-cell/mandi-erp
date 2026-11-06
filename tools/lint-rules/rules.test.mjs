@@ -56,7 +56,9 @@ tester.run("no-floating-point", noFloatingPoint, {
 
 tester.run("no-raw-sql", noRawSql, {
   valid: [
+    { code: `const q = ${JSON.stringify(SQL("PRAGMA", "foreign_keys = ON"))};`, filename: "packages/data/src/drivers/sqlite.js", options: [{ allowPaths: ["packages/data/src/drivers/"] }] },
     { code: "const s = 'hello world';", filename: ENGINE },
+    { code: "const events = ['UPDATE', 'DELETE', 'TRUNCATE'];", filename: ENGINE }, // single words are not statements
     { code: "const s = 'select all the items from the list';", filename: ENGINE }, // English, not SQL
     { code: "const s = 'Delete from cart';", filename: ENGINE },
     { code: "const s = 'Create table of contents';", filename: ENGINE },
@@ -81,10 +83,13 @@ tester.run("no-raw-sql", noRawSql, {
     { code: `const q = ${JSON.stringify(SQL("CREATE", "TABLE", "items (id TEXT)"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: `const q = ${JSON.stringify(SQL("DROP", "TRIGGER", "IF EXISTS t1"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: `const q = ${JSON.stringify(SQL("PRAGMA", "journal_mode = WAL"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
+    { code: `const q = ${JSON.stringify(SQL("TRUNCATE", "TABLE items"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: `const q = ${JSON.stringify(SQL("BEGIN", "IMMEDIATE"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: `const q = ${JSON.stringify(SQL("WITH", "t AS (SELECT 1)"))};`, filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: "const q = " + JSON.stringify(SQL("SELECT", "*", "FROM", "items WHERE id=")) + " + id;", filename: ENGINE, errors: [{ messageId: "rawSql" }] },
     { code: "const q = sql.raw(userText);", filename: "packages/data/src/q.js", errors: [{ messageId: "sqlRaw" }] },
+    { code: `const q = ${JSON.stringify(SQL("PRAGMA", "foreign_keys = ON"))};`, filename: "packages/data/src/other/x.js", options: [{ allowPaths: ["packages/data/src/drivers/"] }], errors: [{ messageId: "rawSql" }] },
+    { code: `const q = ${JSON.stringify(SQL("PRAGMA", "foreign_keys = ON"))};`, filename: "packages/core/src/drivers/x.js", options: [{ allowPaths: ["packages/data/src/drivers/"] }], errors: [{ messageId: "rawSql" }] },
     { code: "import pg from 'pg';", filename: ENGINE, errors: [{ messageId: "driver" }] },
     { code: "import { Kysely } from 'kysely';", filename: "packages/sync/src/x.js", errors: [{ messageId: "driver" }] },
     { code: "const d = require('better-sqlite3');", filename: ENGINE, errors: [{ messageId: "driver" }] },

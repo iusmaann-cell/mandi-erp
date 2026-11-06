@@ -80,4 +80,43 @@ See `README.md`. In short: `npm ci`, then `npm run check`.
 **Open stops**
 - Usman: the BC-01 open stop (first GitHub run on Linux and Windows, and the Playwright smoke tests) still stands. Also confirm the rounding of negatives with the accountant (Q-1, X-13).
 
-**Next:** BC-03 Data layer, both databases.
+
+### BC-03 Two-database data layer (chat C1, 2026-11-06)
+
+**What exists** (`packages/data`; `docs/CONVENTIONS.md` describes how to use it)
+- The physical type map and canonical value codecs in one file (`types.ts`); the catalogue DSL and the catalogue of the first platform tables (`catalogue/`): owner groups, companies, locations, location authorities, fiscal years, nodes, devices, audit events, plus `apply_guard` and `schema_migrations`.
+- The DDL renderer and helpers (`migrations/ddl.ts`): composite foreign keys, company_id-first indexes, `STRICT` SQLite tables with form checks in place of types, class 1 immutability triggers, `apply_guard` triggers, the PostgreSQL trigger functions. The migration list and forward-only runner with checksums (`migrations/scripts.ts`, `runner.ts`).
+- Drivers: Node's built-in SQLite behind a Kysely adapter (bigint reads, write-ahead mode, foreign keys on); `pg` pool that reads canonical forms and works in UTC.
+- The company wall: `store.scoped(ctx)` (query rewriting plugin) and `store.installation()`; `withApplyGuard`; the schema reader (`introspection/`) and the schema test (`schema-test.ts`); test helpers that start a real PostgreSQL and seed two companies (`testing/`).
+
+**Proof** (exit proof of BC-03, all on SQLite 3.53 and a real PostgreSQL 17.10 started from npm binaries)
+- 215 data tests; whole suite 629 tests; `npm run check` green in 103 s. Coverage of `@mandi/data`: statements 95.1%, branches 91.7%, functions 95.4%.
+- The schema test passes on both (no violation) and the two live schemas are identical (`diffSnapshots` is empty). The same test fails on a deliberately damaged schema for each rule: floating-point column, class 1 table without triggers, projection table without its guard, simple foreign key between company tables, company table without company_id, company index not starting with company_id, installation table pointing at a company table, unknown table, extra index.
+- UPDATE and DELETE on a class 1 table are refused (one row, all rows, upsert overwrite, inside a transaction that then rolls back) on both databases.
+- A query without a company context cannot be made; the installation handle refuses company tables; each company sees only its own rows (SELECT, UPDATE, DELETE, joins, left-join semantics, subqueries, upserts); another company's company_id is refused; the composite foreign key refuses a row that points at another company's row.
+- Migrations: applied once; re-run changes nothing; a later migration is applied alone; a changed script, an edited checksum, a renamed migration, a gap, and a database newer than the program are all refused. Migration 1's checksum is pinned for both databases.
+- Values: 64-bit edge round-trips as bigint and one beyond is refused; timestamps, dates, ids, JSON and flags come back canonical; the same inserts read back as identical rows on both databases.
+- NOT done here: the GitHub run of this suite on Linux and Windows (the embedded PostgreSQL package has Linux, macOS and Windows binaries; not run on GitHub or macOS yet).
+
+**Decisions of detail**
+- **Installation-scope tables (X-14, DM-26).** Document 06 listed `nodes` and `devices` (and `owner_groups`) without a company but required `company_id` on every business table and a composite foreign key everywhere. Decided: those three have no `company_id`; company tables refer to them with plain foreign keys. Amended in document 06 (v0.3b) and 00.
+- **Canonical forms (X-15, DM-27).** PostgreSQL's `jsonb` reorders keys, so JSON is read as canonical text (sorted keys, no spaces). PostgreSQL's timestamp input accepts `yesterday`, `infinity` and many spellings that SQLite's CHECK refuses, so `encodeValue` validates timestamps, dates and ids before any write (the apply path of BC-04 must use it). Amended in document 06 and 00.
+- **The company wall is a query rewrite**, not a convention: every statement on a company table gets `company_id = <context>`; the database's composite foreign keys are the second line. PostgreSQL row-level security (document 05 section 12, document 08) is NOT in BC-03's scope and is not built; it belongs to the security package.
+- `location_authorities` is left updatable although document 06 says history tables of class 3 are append-only: its `ended_at` is set when an authority ends. To be reviewed with BC-04 and document 08.
+- `locations.current_epoch` defaults to 1 with a check `>= 1`; `companies.code` and `locations.code` are 2 to 4 characters (unique per company, and unique in the installation for companies).
+- Unique constraints are named unique indexes on both databases (so their names compare); every CHECK has a stable name `ck_<table>_<column>__<kind>`; SQLite checks forms in place of types (`__id`, `__ts`, `__date`, `__json`, `__bool`) and both databases check enumerations (`__enum`) and rules (`__rule`).
+- SQLite is Node's built-in `node:sqlite` (no native dependency; prints an ExperimentalWarning in Node 22). The Kysely adapter in `drivers/sqlite.ts` is the only place that touches it, so the Android app (Capacitor SQLite plugin, BC-10) and the Electron shell (BC-13) can use their own driver. `STRICT` tables need SQLite 3.37 or newer: check the version that Android and Electron ship.
+- PostgreSQL is `pg` 8.23.1. Tests use `embedded-postgres` 17.10.0-beta.17 (real PostgreSQL 17.10 binaries; "beta" is the package's own label, published 2026-06-05). Its install script only creates library symlinks; scripts are off here, so `testing/index.ts` does exactly that from the same `pg-symlinks.json` (SEC-2 review). PostgreSQL will not run as root: the helper asks the package to create a user when it detects root (this sandbox).
+- Kysely 0.29.7 (0.29.8 is five days old).
+- `apply_guard` is the one-row table of document 06. On PostgreSQL two concurrent `applyBundle` transactions would queue on that row; if throughput matters, BC-04 or BC-06 can swap it for a transaction-local setting without changing callers.
+
+**Known problems and notes for the next packages**
+- **BC-04 must decide how `audit_events.bundle_id` gets its foreign key to `bundles`.** `audit_events` is class 1; `bundles` is created in BC-04. SQLite cannot add a foreign key to an existing table, and document 06 section 13 says a migration never rewrites class 1 rows. Nothing is released, so BC-04 may either create `bundles` inside migration 1 (replacing it and the pinned checksums) or rebuild the empty table in migration 2. After the first release only the second is possible and needs a documented exception. The same applies to any later class 1 table that points at a table created after it. (`updated_by_user_id` points at `users` and is class 3, so a rebuild is allowed there.)
+- Raw SQL inside a scoped query cannot be analysed by the wall; the lint rule `mandi/no-raw-sql` is its guard.
+- Rows read from SQLite carry raw integer flags; use `decodeRow` (the repositories of BC-04 onward do).
+- `npm audit`: 14 moderate findings, none high or critical (dev tools).
+
+**Open stops**
+- Usman: the BC-01 and BC-02 open stops stand (first GitHub run on Linux and Windows; confirm rounding of negatives with the accountant). The BC-03 suite starts a real PostgreSQL, so the first GitHub run is also its first run there.
+
+**Next:** BC-04 Bundles and the apply function.

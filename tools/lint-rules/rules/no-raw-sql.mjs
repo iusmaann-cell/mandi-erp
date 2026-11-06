@@ -6,7 +6,9 @@ import { normalizedPath, propertyName } from "../util.mjs";
  *   - string and template text that reads as a SQL statement
  *   - sql.raw / sql.lit / sql.id (string-built SQL)
  *   - importing a database driver or Kysely outside packages/data
- * Migration files (any path containing /migrations/) are the one place SQL text is allowed.
+ * Migration files (any path containing /migrations/) are the main place SQL text is allowed. The option
+ * allowPaths names the few other files that may hold it (the SQLite connection settings and the schema
+ * reader, which only read the database's own catalogue); each is listed in eslint.config.mjs.
  */
 const STATEMENT_PATTERNS = [
   /^\s*SELECT\s[\s\S]*\bFROM\b/, // upper-case SQL
@@ -18,7 +20,7 @@ const STATEMENT_PATTERNS = [
   /^\s*(?:create|alter|drop)\s+(?:or\s+replace\s+)?(?:unique\s+)?(?:temp(?:orary)?\s+)?(?:table|index|view|trigger|schema|extension|function|policy)\s+(?:if\s+(?:not\s+)?exists\s+)?[\w."`[\]]+\s*(?:\(|;|$|\bon\b|\badd\b|\bdrop\b|\brename\b|\bset\b|\bas\b|\bcascade\b)/i,
   /^\s*pragma\s+[a-z_]+\s*(?:[=(;]|$)/i,
   /^\s*(?:attach|detach)\s+database\b/i,
-  /^\s*TRUNCATE\b/,
+  /^\s*TRUNCATE\s+(?:TABLE\s+)?[\w"]/,
   /^\s*with\s+(?:recursive\s+)?[\w"]+\s+as\s*\(/i,
   /^\s*(?:BEGIN|COMMIT|ROLLBACK)(?:\s+(?:IMMEDIATE|DEFERRED|EXCLUSIVE|TRANSACTION))?\s*;?\s*$/,
 ];
@@ -38,7 +40,11 @@ export default {
     schema: [
       {
         type: "object",
-        properties: { dataPackage: { type: "string" } },
+        properties: {
+          dataPackage: { type: "string" },
+          /** Path fragments of files that legitimately hold SQL besides migrations: the drivers' connection settings and the schema reader. */
+          allowPaths: { type: "array", items: { type: "string" } },
+        },
         additionalProperties: false,
       },
     ],
@@ -51,6 +57,7 @@ export default {
   create(context) {
     const file = normalizedPath(context);
     if (file.includes("/migrations/")) return {};
+    if ((context.options[0]?.allowPaths ?? []).some((fragment) => file.includes(fragment))) return {};
     const dataPackage = context.options[0]?.dataPackage ?? "packages/data/";
     const inData = file.includes(dataPackage);
 
