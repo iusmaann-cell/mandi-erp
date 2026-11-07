@@ -25,7 +25,10 @@
     "check:offline": "node tools/ci/check.mjs --offline",
     "proof:bc01": "node tools/ci/proof-bc01.mjs",
     "mutation:numeric": "stryker run stryker.numeric.config.mjs",
-    "mutation:summary": "node tools/ci/mutation-summary.mjs"
+    "mutation:summary": "node tools/ci/mutation-summary.mjs",
+    "report": "node tools/report/generate.mjs",
+    "coverage:package": "node tools/ci/coverage.mjs",
+    "fixtures:update": "node tools/ci/update-fixtures.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

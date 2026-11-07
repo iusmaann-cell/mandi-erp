@@ -181,4 +181,37 @@ The follow-up run on GitHub completed successfully for `check (ubuntu-latest)` (
 **Open stops**
 - Usman: confirm the rounding of negatives with the accountant (X-13). The Windows PostgreSQL start-up failure from BC-03 is still unexplained; the PostgreSQL half is skipped on Windows.
 
-**Next:** BC-05 Test foundations (the seeded world builder, the scenario runner, fixture exporters, the test report generator).
+
+### BC-04 confirmed on GitHub (2026-11-08)
+Run 5 of `commit` completed successfully for `check (ubuntu-latest)` (2m31s, real PostgreSQL) and `check (windows-latest)` (2m40s, PostgreSQL half skipped), and the `android` skeleton passed. Commit `1ecb4e5` here is `77fd2a3` in Usman's repository.
+
+### BC-05 Test foundations (chat C1, 2026-11-08)
+
+**What exists** (`packages/testkit`, `scenarios/`, `fixtures/`, `tools/report`)
+- The seeded world builder: DS-1 and DS-2 as plain data; the schema fixture exporter; fixture drift tests with an explicit rewrite (`npm run fixtures:update`).
+- The scenario runner: parser (`yaml` 2.9.1 with the "failsafe" schema, so every value stays text), comparison, driver interface, runner; the stub engine; `scenarios/WE-1.yaml`.
+- The test report generator (`tools/report/generate.mjs`), `npm run coverage:package`, JSON results and seeds written by `npm run check`; the mutation scoring shared as `tools/ci/mutation-core.mjs`.
+
+**Proof** (exit proof of BC-05: the WE-1 scenario file runs through the runner end to end with a stub engine; a report is generated)
+- WE-1 passes: 3 steps, every expected number of document 03 section 9.1 (batches B1 and B2 with unit costs 202.000000 and 210.000000, Inventory 525,000.00, COGS 2,545,000.00, Sales 2,875,000.00, profit 330,000.00 = 280,000.00 + 50,000.00, document numbers), 7 integrity checks pass, 11 are reported as not applicable with their reasons, none fail. The document's intermediate numbers (3,070,000.00 inventory after two purchases) are checked separately.
+- The test report of this package was produced by the generator from the run's own files (`testing/BC-05-test-report.md`).
+- 877 tests (55 testkit, 12 report tooling); `npm run check` green in 207 s on Node 22.16. Coverage of `@mandi/testkit`: statements 95.9%, branches 86.4% (target 80% statements for a non-engine package).
+
+**Decisions of detail** (document 09 amended to v0.1a: TS-13 to TS-15; document 00 amended)
+- DS-1 has two locations: document 09 said one, but WE-3 transfers stock to Shop B.
+- A scenario step is a verb key plus named inputs, because document 09's example kept the inputs in comments; every value is text and the integrity line is required.
+- Fixtures are produced by tools into `fixtures/`; an older schema version is written once and never overwritten.
+- The stub engine is a stub. It was written by this chat, so WE-1 passing proves the runner and the driver interface, not any accounting rule. The independent reference model (VC-0a) is written by a party that has not seen it.
+- The world builder returns plain data. The master-data tables (items, parties) do not exist yet; the modules that create them will load these data sets.
+
+**Defects found and fixed in this package:** a blank scenario input was read as empty text (now refused with its line); the fixture updater left a hole for a missing older schema version on first use.
+
+**Known problems and notes for the next packages**
+- DS-2's opening positions are not yet checked against the acceptance steps of document 02 section 4, which arrive with the modules.
+- The report's narrative comes from a notes file; only its figures are generated.
+- Seeds are recorded for scenario runs and property tests; the simulator seed bank starts with BC-08.
+- `npm audit`: 14 moderate findings (dev tools), none high or critical.
+
+**Open stops:** Usman: confirm the rounding of negatives with the accountant (X-13). The Windows PostgreSQL start-up failure is unexplained; that half is skipped on Windows.
+
+**Next:** BC-06 Nodes, cloud and enrolment (server profiles, node and device keys, signed-challenge authentication, enrolment codes), then BC-07 the sync spine.

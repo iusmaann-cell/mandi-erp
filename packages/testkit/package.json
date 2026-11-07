@@ -12,6 +12,10 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@mandi/core": "*"
+    "@mandi/core": "*",
+    "@mandi/data": "*",
+    "@mandi/numeric": "*",
+    "@mandi/sync": "*",
+    "yaml": "2.9.1"
   }
 }

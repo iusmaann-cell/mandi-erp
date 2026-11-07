@@ -131,6 +131,24 @@ device's counter ahead by 100 and records the range in `lost_numbers`. `checkInt
 (`seedSyncWorld`), `postTestDocument`, `tableHash`. Golden bundles live in `packages/sync/golden` (rewrite on purpose with `UPDATE_GOLDEN=1`).
 Crash-point tests abandon the connection after every statement (`DriverHooks`, a test seam; nothing in the product sets it).
 
+## Test foundations (`@mandi/testkit`, document 09 sections 6.2, 7.1, 15.2 and 16)
+
+**Data sets.** `buildDataSet("DS-1" | "DS-2", seed?)` makes a data set as plain data (whole numbers as text), the same every time for a seed, down to the
+identifiers. DS-1 is the exact inputs of WE-1 to WE-4 (Godown A and Shop B, 3 items, 4 parties); DS-2 is 20 items, 15 parties, opening batches and balances,
+with one item and one party that have no Urdu name on purpose (R-29 point 5). Nothing is edited by hand: fixtures in `fixtures/` are produced by tools
+and rewritten only with `npm run fixtures:update`, then the diff is read. The schema of each version is kept as `fixtures/schema-vN.json`; an older one is never
+overwritten, so an edited migration fails a test.
+
+**Scenarios.** A scenario file (`scenarios/*.yaml`, see `scenarios/WE-1.yaml`) is: `scenario`, `data`, `steps`, `expect`. A step is a verb key (`post`, `reverse`,
+`create`, `change`, `advance`, `set`) plus named inputs; every value is text ("525000.00"), read with the numeric module at the scale of what it is compared
+with, never rounded. Expected rows are matched by `no`, `code`, `id`, `account` or `name`. `integrity: all_pass` is required. `runScenario(scenario, dataSet, driver)` drives any
+engine through `ScenarioDriver` (`load`, `execute`, `observe`, `finalChecks`), runs the integrity checks even if a step failed, and reports every check that the engine cannot make
+as `not_applicable` with its reason. `StubEngine` is a stub (two commands) that only proves the runner; the real engine and the independent reference model implement the same interface.
+
+**Reports.** `npm run check` leaves `build-output/vitest-results.json`, the scenario results and the seeds; `registerSeed` and `writeScenarioResult` write them when
+`MANDI_RESULTS_DIR` is set. `npm run report` turns a run plus a notes file into the one-page report of 15.2: counts per project, coverage against 5.6 (95% and 90% for numeric and
+the engine, 80% statements for the rest), mutation score, scenario runs with their data fingerprint and seed, and says plainly when a part is missing.
+
 ## Time, randomness and ids (TR-1, TR-2)
 
 Take a `Runtime` (`@mandi/core`): `clock`, `random`, `ids`. Apps use `createSystemRuntime()`. Tests use

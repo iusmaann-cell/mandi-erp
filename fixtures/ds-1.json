@@ -1,0 +1,139 @@
+{
+  "company": {
+    "code": "MT",
+    "fiscal_year_start_month": 7,
+    "id": "019f1af9-b400-70c4-a964-9cbe8f59fab8",
+    "name_en": "Mandi Test Traders",
+    "name_ur": "منڈی ٹیسٹ ٹریڈرز"
+  },
+  "id": "DS-1",
+  "items": [
+    {
+      "base_unit": "kg",
+      "code": "RICE-BAS",
+      "id": "019f1af9-b400-70c7-9e8f-563e793f3fb8",
+      "name_en": "Basmati Rice",
+      "name_ur": "باسمتی چاول",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "WHEAT",
+      "id": "019f1af9-b400-70c8-9677-996e2183f253",
+      "name_en": "Wheat",
+      "name_ur": "گندم",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "pcs",
+      "code": "OIL",
+      "id": "019f1af9-b400-70c9-9e59-542907a8eef9",
+      "name_en": "Cooking Oil, 1 litre bottle",
+      "name_ur": "کوکنگ آئل، ایک لیٹر بوتل",
+      "units": [
+        {
+          "code": "CARTON",
+          "factor": {
+            "den": "1",
+            "num": "12"
+          },
+          "name_en": "Carton of 12",
+          "name_ur": "12 کا کارٹن"
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "code": "GA",
+      "id": "019f1af9-b400-70c5-a676-4e134621470b",
+      "kind": "godown",
+      "name_en": "Godown A",
+      "name_ur": "گودام اے"
+    },
+    {
+      "code": "SB",
+      "id": "019f1af9-b400-70c6-a73b-86f425a9b72d",
+      "kind": "shop",
+      "name_en": "Shop B",
+      "name_ur": "دکان بی"
+    }
+  ],
+  "opening": {
+    "balances": [],
+    "batches": []
+  },
+  "parties": [
+    {
+      "code": "SUP-NOOR",
+      "credit_limit_paisa": "0",
+      "id": "019f1af9-b400-70ca-b031-dbffc3d7fb02",
+      "kind": "supplier",
+      "name_en": "Al-Noor Suppliers",
+      "name_ur": "النور سپلائرز"
+    },
+    {
+      "code": "CAR-FAST",
+      "credit_limit_paisa": "0",
+      "id": "019f1af9-b400-70cb-9868-7752057e99cc",
+      "kind": "carrier",
+      "name_en": "Fast Transport Co",
+      "name_ur": "فاسٹ ٹرانسپورٹ کمپنی"
+    },
+    {
+      "code": "CUS-KARIM",
+      "credit_limit_paisa": "500000000",
+      "id": "019f1af9-b400-70cc-9a2b-f797986dd374",
+      "kind": "customer",
+      "name_en": "Karim Store",
+      "name_ur": "کریم اسٹور"
+    },
+    {
+      "code": "CUS-BILAL",
+      "credit_limit_paisa": "300000000",
+      "id": "019f1af9-b400-70cd-8fbd-97e2736a3d58",
+      "kind": "customer",
+      "name_en": "Bilal Traders",
+      "name_ur": "بلال ٹریڈرز"
+    }
+  ],
+  "seed": "ds-1"
+}

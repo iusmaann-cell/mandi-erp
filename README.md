@@ -11,6 +11,9 @@ npm test                  # Vitest, all packages and tools (the data tests start
 npm run e2e               # Playwright screen tests (needs: npx playwright install chromium)
 npm run sbom              # software bill of materials to build-output/sbom.cdx.json
 npm run mutation:numeric  # mutation testing of @mandi/numeric (minutes; nightly, not per commit)
+npm run coverage:package -- <package>   # coverage of one package against document 09 section 5.6
+npm run report -- --notes testing/<WP>-notes.json --out testing/<WP>-test-report.md   # the test report of 15.2 from the last run
+npm run fixtures:update   # rewrite the golden files on purpose (data sets, newest schema, golden bundles); read the diff
 ```
 
 Needs Node 22.16 or newer (the built-in SQLite needs it; `.nvmrc` pins 22.16.0, the version CI runs) and npm 11.21.1 (`npm install --global npm@11.21.1`; npm 10 fails on this

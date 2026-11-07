@@ -1,0 +1,47 @@
+# WE-1: two purchases and a FIFO sale (document 03, section 9.1; document 09, section 7.1).
+# Every value is text, written as a person would write it; the runner reads it with the numeric module.
+scenario: WE-1 two purchases and a FIFO sale
+data: DS-1
+steps:
+  - post: purchase_receipt   # 200 bags of 50 kg = 10,000 kg at Rs 200/kg, freight borne by us Rs 20,000
+    day: "1"
+    item: RICE-BAS
+    supplier: SUP-NOOR
+    location: GA
+    qty_kg: "10000"
+    rate: "200.00"
+    freight: { payee: CAR-FAST, amount: "20000" }
+  - post: purchase_receipt   # 100 bags = 5,000 kg at Rs 210/kg, no charges
+    day: "2"
+    item: RICE-BAS
+    supplier: SUP-NOOR
+    location: GA
+    qty_kg: "5000"
+    rate: "210.00"
+  - post: sale_dispatch      # 250 bags = 12,500 kg at Rs 230/kg to a credit customer
+    day: "3"
+    item: RICE-BAS
+    customer: CUS-KARIM
+    location: GA
+    qty_kg: "12500"
+    rate: "230.00"
+expect:
+  batches:
+    - { no: B1, remaining_kg: "0", unit_cost: "202.000000" }
+    - { no: B2, remaining_kg: "2500", unit_cost: "210.000000", value: "525000.00" }
+  accounts:
+    INVENTORY: "525000.00"
+    COGS: "2545000.00"
+    SALES: "2875000.00"
+    AR: "2875000.00"
+    AP: "3050000.00"
+    TRANSPORT_PAYABLE: "20000.00"
+    GRNI: "0.00"
+  profit: { invoice: "330000.00", B1: "280000.00", B2: "50000.00" }
+  parties:
+    CUS-KARIM: { receivable: "2875000.00" }
+  documents:
+    - { no: PR-GA-01-2627-000001, type: purchase_receipt }
+    - { no: PR-GA-01-2627-000002, type: purchase_receipt }
+    - { no: SD-GA-01-2627-000001, type: sale_dispatch }
+  integrity: all_pass

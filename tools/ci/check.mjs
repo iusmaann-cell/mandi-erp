@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scanProject } from "../secret-scan/scan.mjs";
@@ -24,8 +24,8 @@ const BUDGET_SECONDS = 15 * 60; // document 09, 4.3: under 15 minutes
 
 const bin = (...parts) => join(root, "node_modules", ...parts);
 
-function node(script, scriptArgs) {
-  return spawnSync(process.execPath, [script, ...scriptArgs], { cwd: root, stdio: "inherit" }).status === 0;
+function node(script, scriptArgs, env = {}) {
+  return spawnSync(process.execPath, [script, ...scriptArgs], { cwd: root, stdio: "inherit", env: { ...process.env, ...env } }).status === 0;
 }
 
 function npm(npmArgs) {
@@ -55,7 +55,17 @@ const steps = [
       return findings.length === 0;
     },
   },
-  { name: "test", run: () => node(bin("vitest", "vitest.mjs"), ["run"]) },
+  {
+    name: "test",
+    run() {
+      mkdirSync(join(root, "build-output"), { recursive: true });
+      // what the previous run left for the report generator is cleared, so a report never mixes two runs
+      rmSync(join(root, "build-output", "scenarios"), { recursive: true, force: true });
+      rmSync(join(root, "build-output", "seeds.jsonl"), { force: true });
+      // the JSON file, the scenario results and the seeds feed the test report generator (TR-12)
+      return node(bin("vitest", "vitest.mjs"), ["run", "--reporter=default", "--reporter=json", "--outputFile.json=build-output/vitest-results.json"], { MANDI_RESULTS_DIR: "build-output" });
+    },
+  },
   { name: "audit", run: () => npm(["audit", "--audit-level=high"]) },
 ];
 

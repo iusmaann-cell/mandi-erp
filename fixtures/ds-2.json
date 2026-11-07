@@ -1,0 +1,803 @@
+{
+  "company": {
+    "code": "DL",
+    "fiscal_year_start_month": 7,
+    "id": "019f1af9-b400-7753-8fde-985cb3ddf31d",
+    "name_en": "Day-in-the-Life Traders",
+    "name_ur": "ڈے اِن دی لائف ٹریڈرز"
+  },
+  "id": "DS-2",
+  "items": [
+    {
+      "base_unit": "kg",
+      "code": "DAL-MASOOR",
+      "id": "019f1af9-b400-7756-a00b-b627c655d44f",
+      "name_en": "Masoor Lentils",
+      "name_ur": "دال مسور",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "CORN",
+      "id": "019f1af9-b400-7757-8a1c-38780f9c0f9e",
+      "name_en": "Maize",
+      "name_ur": "مکئی",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "CHILI",
+      "id": "019f1af9-b400-7758-ae52-a1d2d1f23771",
+      "name_en": "Red Chili",
+      "name_ur": "لال مرچ",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "DATES",
+      "id": "019f1af9-b400-7759-b15e-e82ae5b63776",
+      "name_en": "Dates",
+      "name_ur": "کھجور",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "BESAN",
+      "id": "019f1af9-b400-775a-a568-62a10daf6ad4",
+      "name_en": "Gram Flour",
+      "name_ur": "بیسن",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "COCONUT",
+      "id": "019f1af9-b400-775b-8e57-d0500ab9b4ec",
+      "name_en": "Dried Coconut",
+      "name_ur": "سوکھا ناریل",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "RICE-BRK",
+      "id": "019f1af9-b400-775c-9568-78bbda22e8ed",
+      "name_en": "Broken Rice",
+      "name_ur": "ٹوٹا چاول",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "SUGAR",
+      "id": "019f1af9-b400-775d-807e-6ea8619bffc7",
+      "name_en": "Sugar",
+      "name_ur": "چینی",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "DAL-MOONG",
+      "id": "019f1af9-b400-775e-a493-d871012c3c60",
+      "name_en": "Moong Lentils",
+      "name_ur": "دال مونگ",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "DAL-CHANA",
+      "id": "019f1af9-b400-775f-ae76-c189fc8f6034",
+      "name_en": "Chana Lentils",
+      "name_ur": "دال چنا",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "pcs",
+      "code": "OIL",
+      "id": "019f1af9-b400-7760-96f4-b91879f227a3",
+      "name_en": "Cooking Oil, 1 litre bottle",
+      "name_ur": "کوکنگ آئل، ایک لیٹر بوتل",
+      "units": [
+        {
+          "code": "CARTON",
+          "factor": {
+            "den": "1",
+            "num": "12"
+          },
+          "name_en": "Carton of 12",
+          "name_ur": "12 کا کارٹن"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "WHEAT",
+      "id": "019f1af9-b400-7761-9216-b2fd8eeaf9da",
+      "name_en": "Wheat",
+      "name_ur": "گندم",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "RICE-IRRI",
+      "id": "019f1af9-b400-7762-bf2b-2d9fe26f9c46",
+      "name_en": "Irri-6 Rice",
+      "name_ur": "ایری 6 چاول",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "CUMIN",
+      "id": "019f1af9-b400-7763-a3b1-590d5b28664b",
+      "name_en": "Cumin",
+      "name_ur": "زیرہ",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "CHICKPEA",
+      "id": "019f1af9-b400-7764-9d6d-28290de502e6",
+      "name_en": "Chickpeas",
+      "name_ur": null,
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "TEA",
+      "id": "019f1af9-b400-7765-821f-4ec3add66760",
+      "name_en": "Tea Leaves",
+      "name_ur": "چائے کی پتی",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "pcs",
+      "code": "GHEE",
+      "id": "019f1af9-b400-7766-b3ec-ef84dadf6291",
+      "name_en": "Ghee, 1 kg pack",
+      "name_ur": "گھی، ایک کلو پیک",
+      "units": [
+        {
+          "code": "CARTON",
+          "factor": {
+            "den": "1",
+            "num": "12"
+          },
+          "name_en": "Carton of 12",
+          "name_ur": "12 کا کارٹن"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "RICE-BAS",
+      "id": "019f1af9-b400-7767-9f01-07db296d449d",
+      "name_en": "Basmati Rice",
+      "name_ur": "باسمتی چاول",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "50"
+          },
+          "name_en": "Bag of 50 kg",
+          "name_ur": "50 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "TURMERIC",
+      "id": "019f1af9-b400-7768-a80a-af0f6bfd7b8e",
+      "name_en": "Turmeric",
+      "name_ur": "ہلدی",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    },
+    {
+      "base_unit": "kg",
+      "code": "ALMOND",
+      "id": "019f1af9-b400-7769-982e-7473d138f49e",
+      "name_en": "Almonds",
+      "name_ur": "بادام",
+      "units": [
+        {
+          "code": "BAG",
+          "factor": {
+            "den": "1",
+            "num": "25"
+          },
+          "name_en": "Bag of 25 kg",
+          "name_ur": "25 کلو بوری"
+        },
+        {
+          "code": "MAUND",
+          "factor": {
+            "den": "1",
+            "num": "40"
+          },
+          "name_en": "Maund (40 kg)",
+          "name_ur": "من (40 کلو)"
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "code": "GA",
+      "id": "019f1af9-b400-7754-ae50-035f4a0c6a12",
+      "kind": "godown",
+      "name_en": "Godown A",
+      "name_ur": "گودام اے"
+    },
+    {
+      "code": "SB",
+      "id": "019f1af9-b400-7755-b33c-a6164fe17d56",
+      "kind": "shop",
+      "name_en": "Shop B",
+      "name_ur": "دکان بی"
+    }
+  ],
+  "opening": {
+    "balances": [
+      {
+        "amount_paisa": "43902500",
+        "party_code": "CUS-KARIM",
+        "side": "receivable"
+      },
+      {
+        "amount_paisa": "190997700",
+        "party_code": "CUS-CITY",
+        "side": "receivable"
+      },
+      {
+        "amount_paisa": "198554400",
+        "party_code": "SUP-GREEN",
+        "side": "payable"
+      },
+      {
+        "amount_paisa": "2888000",
+        "party_code": "CUS-BILAL",
+        "side": "receivable"
+      },
+      {
+        "amount_paisa": "147530100",
+        "party_code": "SUP-DRYFRUIT",
+        "side": "payable"
+      },
+      {
+        "amount_paisa": "95929500",
+        "party_code": "CUS-AWAN",
+        "side": "receivable"
+      },
+      {
+        "amount_paisa": "6652400",
+        "party_code": "CAR-SALMAN",
+        "side": "payable"
+      },
+      {
+        "amount_paisa": "199782400",
+        "party_code": "SUP-MADINA",
+        "side": "payable"
+      }
+    ],
+    "batches": [
+      {
+        "item_code": "DAL-MASOOR",
+        "location_code": "SB",
+        "qty_milli": "677000",
+        "received_on": "2026-06-18",
+        "unit_cost_micro": "322939000"
+      },
+      {
+        "item_code": "CORN",
+        "location_code": "GA",
+        "qty_milli": "11130000",
+        "received_on": "2026-06-28",
+        "unit_cost_micro": "314183000"
+      },
+      {
+        "item_code": "CHILI",
+        "location_code": "SB",
+        "qty_milli": "3032000",
+        "received_on": "2026-06-17",
+        "unit_cost_micro": "423315000"
+      },
+      {
+        "item_code": "DATES",
+        "location_code": "SB",
+        "qty_milli": "9872000",
+        "received_on": "2026-06-18",
+        "unit_cost_micro": "273297000"
+      },
+      {
+        "item_code": "BESAN",
+        "location_code": "SB",
+        "qty_milli": "14431000",
+        "received_on": "2026-06-19",
+        "unit_cost_micro": "150766000"
+      },
+      {
+        "item_code": "COCONUT",
+        "location_code": "SB",
+        "qty_milli": "9425000",
+        "received_on": "2026-06-19",
+        "unit_cost_micro": "194222000"
+      },
+      {
+        "item_code": "RICE-BRK",
+        "location_code": "GA",
+        "qty_milli": "16025000",
+        "received_on": "2026-06-18",
+        "unit_cost_micro": "51320000"
+      },
+      {
+        "item_code": "SUGAR",
+        "location_code": "SB",
+        "qty_milli": "19133000",
+        "received_on": "2026-06-13",
+        "unit_cost_micro": "450013000"
+      },
+      {
+        "item_code": "DAL-MOONG",
+        "location_code": "GA",
+        "qty_milli": "8908000",
+        "received_on": "2026-06-11",
+        "unit_cost_micro": "341480000"
+      },
+      {
+        "item_code": "DAL-CHANA",
+        "location_code": "SB",
+        "qty_milli": "14232000",
+        "received_on": "2026-06-15",
+        "unit_cost_micro": "315839000"
+      },
+      {
+        "item_code": "OIL",
+        "location_code": "SB",
+        "qty_milli": "13195000",
+        "received_on": "2026-06-06",
+        "unit_cost_micro": "432893000"
+      },
+      {
+        "item_code": "WHEAT",
+        "location_code": "GA",
+        "qty_milli": "1124000",
+        "received_on": "2026-06-18",
+        "unit_cost_micro": "251778000"
+      }
+    ]
+  },
+  "parties": [
+    {
+      "code": "CUS-KARIM",
+      "credit_limit_paisa": "300000000",
+      "id": "019f1af9-b400-776a-ba3f-c66cb9c51c46",
+      "kind": "customer",
+      "name_en": "Karim Store",
+      "name_ur": "کریم اسٹور"
+    },
+    {
+      "code": "CUS-CITY",
+      "credit_limit_paisa": "250000000",
+      "id": "019f1af9-b400-776b-99f5-e1c26306c1f3",
+      "kind": "customer",
+      "name_en": "City Kiryana Store",
+      "name_ur": "سٹی کریانہ اسٹور"
+    },
+    {
+      "code": "SUP-GREEN",
+      "credit_limit_paisa": "500000000",
+      "id": "019f1af9-b400-776c-bcdd-3904ed669ae1",
+      "kind": "supplier",
+      "name_en": "Green Valley Foods",
+      "name_ur": "گرین ویلی فوڈز"
+    },
+    {
+      "code": "CUS-BILAL",
+      "credit_limit_paisa": "400000000",
+      "id": "019f1af9-b400-776d-8fa1-bfd3e41856ff",
+      "kind": "customer",
+      "name_en": "Bilal Traders",
+      "name_ur": "بلال ٹریڈرز"
+    },
+    {
+      "code": "SUP-DRYFRUIT",
+      "credit_limit_paisa": "200000000",
+      "id": "019f1af9-b400-776e-882f-34328d42128c",
+      "kind": "supplier",
+      "name_en": "Lahore Dry Fruit House",
+      "name_ur": "لاہور ڈرائی فروٹ ہاؤس"
+    },
+    {
+      "code": "CUS-AWAN",
+      "credit_limit_paisa": "400000000",
+      "id": "019f1af9-b400-776f-9465-3f50ae628532",
+      "kind": "customer",
+      "name_en": "Awan Cash and Carry",
+      "name_ur": null
+    },
+    {
+      "code": "CAR-SALMAN",
+      "credit_limit_paisa": "250000000",
+      "id": "019f1af9-b400-7770-9bba-60f4a60bad06",
+      "kind": "carrier",
+      "name_en": "Salman Transport",
+      "name_ur": "سلمان ٹرانسپورٹ"
+    },
+    {
+      "code": "SUP-MADINA",
+      "credit_limit_paisa": "500000000",
+      "id": "019f1af9-b400-7771-b8b7-a39a3c933147",
+      "kind": "supplier",
+      "name_en": "Madina Grain House",
+      "name_ur": "مدینہ گرین ہاؤس"
+    },
+    {
+      "code": "CUS-STAR",
+      "credit_limit_paisa": "250000000",
+      "id": "019f1af9-b400-7772-8e86-e037e31fd4b9",
+      "kind": "customer",
+      "name_en": "Star Wholesale",
+      "name_ur": "اسٹار ہول سیل"
+    },
+    {
+      "code": "SUP-TAJ",
+      "credit_limit_paisa": "100000000",
+      "id": "019f1af9-b400-7773-a7ea-5b845fbc2d84",
+      "kind": "supplier",
+      "name_en": "Taj Oil Depot",
+      "name_ur": "تاج آئل ڈپو"
+    },
+    {
+      "code": "SUP-ZUBAIR",
+      "credit_limit_paisa": "450000000",
+      "id": "019f1af9-b400-7774-8112-3181eb9fdc43",
+      "kind": "supplier",
+      "name_en": "Zubair Flour Mills",
+      "name_ur": "زبیر فلور ملز"
+    },
+    {
+      "code": "SUP-NOOR",
+      "credit_limit_paisa": "50000000",
+      "id": "019f1af9-b400-7775-8c84-dedc9b060664",
+      "kind": "supplier",
+      "name_en": "Al-Noor Suppliers",
+      "name_ur": "النور سپلائرز"
+    },
+    {
+      "code": "BOTH-GHULAM",
+      "credit_limit_paisa": "200000000",
+      "id": "019f1af9-b400-7776-b136-14b0bd7c8d1c",
+      "kind": "both",
+      "name_en": "Haji Ghulam Traders",
+      "name_ur": "حاجی غلام ٹریڈرز"
+    },
+    {
+      "code": "BOTH-REHMAN",
+      "credit_limit_paisa": "50000000",
+      "id": "019f1af9-b400-7777-80f8-3e137503f35c",
+      "kind": "both",
+      "name_en": "Rehman Brothers",
+      "name_ur": "رحمان برادرز"
+    },
+    {
+      "code": "CUS-SHAN",
+      "credit_limit_paisa": "500000000",
+      "id": "019f1af9-b400-7778-8890-47e349cf55bd",
+      "kind": "customer",
+      "name_en": "Shan Provision Store",
+      "name_ur": "شان پروویژن اسٹور"
+    }
+  ],
+  "seed": "ds-2"
+}
