@@ -9,6 +9,7 @@ export { catalogueOf, MIGRATIONS, statementsOf, type Migration } from "./migrati
 export type * from "./model";
 export { decodeRow, encodeRow } from "./rows";
 export { checkSchema, diffSnapshots, type SchemaRule, type Violation } from "./schema-test";
-export { createPostgresStore, createSqliteStore, type CompanyContext, type DataStore, type InstallationDb, type ScopedDb, type PostgresStoreOptions, type SqliteStoreOptions } from "./store";
+export { createPostgresStore, createSqliteStore, type CompanyContext, type DataStore, type InstallationDb, type PostgresStoreOptions, type ScopedDb, type SqliteStoreOptions, type TxHandles } from "./store";
+export type { DriverHooks, StatementHook, StatementInfo } from "./drivers/hooks";
 export { createPostgresPool, type PostgresConnection } from "./drivers/postgres";
-export { CANONICAL_TIMESTAMP, decodeValue, encodeValue, FORBIDDEN_PHYSICAL_TYPES, normalizeTimestamp, PHYSICAL_TYPE, type DbKind, type LogicalType } from "./types";
+export { canonicalJson, CANONICAL_TIMESTAMP, decodeValue, encodeValue, FORBIDDEN_PHYSICAL_TYPES, normalizeTimestamp, PHYSICAL_TYPE, type DbKind, type LogicalType } from "./types";

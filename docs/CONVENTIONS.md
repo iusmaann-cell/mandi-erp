@@ -105,6 +105,32 @@ The PostgreSQL half runs on Linux and macOS and is skipped, with a loud message,
 Linux cloud container); `MANDI_TEST_POSTGRES=on` forces it on, `=off` skips it anywhere. If the server cannot start, the error
 shows the server's own output.
 
+## Bundles and applying them (`@mandi/sync`, documents 05 section 7 and 9, 06 sections 4 and 5)
+
+**One write path.** Class 1 facts are written only by `applyBundleInTransaction` (D-1). The posting transaction of the engine
+(`store.transaction(ctx, tx => ...)`) issues numbers with `NumberIssuer`, builds the rows with `toWireRow`, authors the next bundle with
+`authorBundle`, and applies it in the same transaction (mode `author`); every other node and the cloud call `receiveBundle`
+(mode `receive`). A rejection writes nothing: the author gets `ApplyRejected(code, detail)`; a receiver keeps the bundle,
+quarantined, with an open row in `exceptions`, and a retry that succeeds resolves it. Failures of the connection are never rejections.
+
+**Steps.** 1 envelope (schema version, hash, epoch, authority, `node_seq`, `prev_hash`); 2 content (rows well formed and class 1,
+printed numbers unused, the registered validators); 3 insert (the bundle's own row first, then its rows); 4 projections with the apply
+guard open (number counters, the node's chain head, the registered projectors; a projection that cannot be derived rejects the bundle).
+Later work packages register their tables, numbering rules, validators and projectors in an `ApplyRegistry`; the machinery does not change.
+
+**Format.** `Bundle` (bundle.ts): canonical JSON (keys sorted, no spaces), whole numbers as decimal strings on the wire, envelope counters
+as JSON numbers within 2^53, `hash` = SHA-256 of everything but `hash` and `signature`. `verifyWireText` finds any single changed character;
+`verifyBundleChain` finds a changed, lost, reordered or inserted bundle. A stored bundle is read back through `canonicalJson`
+(PostgreSQL's `jsonb` re-spaces and reorders JSON).
+
+**Numbers.** `TD-GA-01-2627-000045`: type, location code, device code, fiscal year, sequence (six digits, growing). The counter is a
+projection that moves only when the bundle applies, so a rolled-back save never burns a number. `recoverSeries` jumps a replaced
+device's counter ahead by 100 and records the range in `lost_numbers`. `checkIntegrity` is the start-up check after a crash.
+
+**Testing.** `@mandi/sync/testing`: a trivial document type (`test_documents`, `test_document_lines`, `test_stock`), a two-node world
+(`seedSyncWorld`), `postTestDocument`, `tableHash`. Golden bundles live in `packages/sync/golden` (rewrite on purpose with `UPDATE_GOLDEN=1`).
+Crash-point tests abandon the connection after every statement (`DriverHooks`, a test seam; nothing in the product sets it).
+
 ## Time, randomness and ids (TR-1, TR-2)
 
 Take a `Runtime` (`@mandi/core`): `clock`, `random`, `ids`. Apps use `createSystemRuntime()`. Tests use

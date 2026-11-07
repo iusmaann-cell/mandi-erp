@@ -10,6 +10,7 @@ import { createPostgresPool } from "../drivers/postgres";
 import { createPostgresStore, createSqliteStore, type DataStore } from "../store";
 import type { DbKind } from "../types";
 import type { Migration } from "../migrations/scripts";
+import type { DriverHooks } from "../drivers/hooks";
 
 /**
  * Test helpers (document 09, TL-4): a real PostgreSQL server started from the npm binaries, and a
@@ -127,6 +128,8 @@ let databaseSequence = 0;
 export interface OpenTestStoreOptions {
   readonly clock?: Clock;
   readonly migrations?: readonly Migration[];
+  /** The crash-point seam (drivers/hooks.ts). */
+  readonly hooks?: DriverHooks;
 }
 
 /** One empty database that several stores can be opened on, one after another (as when a program is updated). */
@@ -139,14 +142,14 @@ export interface TestDatabase {
 export async function createTestDatabase(kind: DbKind, pg?: TestPostgres): Promise<TestDatabase> {
   databaseSequence += 1;
   const defaultClock = createTestRuntime({ seed: "data-tests" }).clock;
-  const pick = (o: OpenTestStoreOptions) => ({ clock: o.clock ?? defaultClock, ...(o.migrations === undefined ? {} : { migrations: o.migrations }) });
+  const pick = (o: OpenTestStoreOptions) => ({ clock: o.clock ?? defaultClock, ...(o.migrations === undefined ? {} : { migrations: o.migrations }), ...(o.hooks === undefined ? {} : { hooks: o.hooks }) });
   if (kind === "sqlite") {
     const path = join(mkdtempSync(join(tmpdir(), "mandi-sqlite-")), "test.db");
     return { kind, open: (o = {}) => createSqliteStore({ path, ...pick(o) }) };
   }
   if (pg === undefined) throw new Error("a PostgreSQL test database needs a started test server (startTestPostgres)");
   const { connectionString } = await pg.createDatabase(`t_${String(databaseSequence)}`);
-  return { kind, open: (o = {}) => createPostgresStore({ connection: createPostgresPool({ connectionString, max: 2 }), ...pick(o) }) };
+  return { kind, open: (o = {}) => createPostgresStore({ connection: createPostgresPool({ connectionString, max: 2, ...(o.hooks === undefined ? {} : { hooks: o.hooks }) }), ...pick(o) }) };
 }
 
 /** A migrated-on-demand store on a new database; convenience for tests that need only one. */
@@ -155,3 +158,4 @@ export async function openTestStore(kind: DbKind, options: OpenTestStoreOptions 
 }
 
 export { seedWorld, type SeededCompany, type World } from "./seed";
+export { TEST_DOCUMENT_LINES, TEST_DOCUMENTS, TEST_STOCK, WITH_TEST_DOCUMENTS } from "../migrations/test-fixtures";

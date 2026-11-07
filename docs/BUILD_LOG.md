@@ -119,7 +119,6 @@ See `README.md`. In short: `npm ci`, then `npm run check`.
 **Open stops**
 - Usman: the BC-01 and BC-02 open stops stand (first GitHub run on Linux and Windows; confirm rounding of negatives with the accountant). The BC-03 suite starts a real PostgreSQL, so the first GitHub run is also its first run there.
 
-**Next:** BC-04 Bundles and the apply function.
 
 ### BC-03 follow-up: the first GitHub run was red (2026-11-06)
 
@@ -140,4 +139,46 @@ The BC-03 push failed both jobs of the `commit` workflow. Read from the run page
 
 **CI evidence for BC-01 and BC-02 (read from GitHub, 2026-11-06):** both `commit` runs completed successfully for `check (ubuntu-latest)` (2m13s, 2m05s) and `check (windows-latest)` (2m44s, 3m03s), including the Playwright browser tests; the `android` skeleton runs succeeded. The BC-01 open stop is closed.
 
-**Next:** BC-04 Bundles and the apply function.
+
+### BC-03 follow-up, confirmed (2026-11-07)
+The follow-up run on GitHub completed successfully for `check (ubuntu-latest)` (2m08s, with the real PostgreSQL half) and `check (windows-latest)` (2m30s, with the PostgreSQL half skipped as designed), and for the `android` skeleton. The cause of the Windows PostgreSQL start-up failure is still unknown.
+
+### BC-04 Bundles and the apply function (chat C1, 2026-11-07)
+
+**What exists**
+- `@mandi/data`: tables `bundles` (migration 1, replaced once before any release so that `audit_events.bundle_id` has its foreign key), and in migration 2 `number_series` (projection), `lost_numbers`, `exceptions`, `node_chain_heads` (installation-scope projection). `store.transaction(ctx, tx => ...)` gives the company handle and the installation handle on one connection. Statement hooks for crash testing. `DataStore` has no unscoped handle.
+- `@mandi/sync`: canonical JSON, the bundle envelope, hash and chain checks; wire rows against the catalogue; `authorBundle`; `applyBundleInTransaction` and `receiveBundle` with quarantine; `ApplyRegistry`; `NumberIssuer`, fiscal year codes, document numbers, `recoverSeries`; `checkIntegrity`; derived ids; test support and golden bundle tooling.
+- Lint: `mandi/company-context` now takes `allowPaths`; `packages/sync/` is allowed to call query builders because it only ever holds scoped handles.
+
+**Proof** (exit proof of BC-04: PB-13 to PB-16, PB-18; crash-point tests for apply and number issue; golden bundles identical on both databases)
+- 175 sync tests on SQLite and on a real PostgreSQL 17.10; whole suite 810 tests; `npm run check` green in 190 s on the pinned Node 22.16. Coverage of `@mandi/sync`: statements 95.4%, branches 90.1%, functions 98.6%.
+- PB-13 idempotent apply (including property over repeated deliveries). PB-14 all 20 interleavings of two locations give one final state, and random delivery orders with retry converge. PB-15 every single-character substitution, deletion and insertion of a bundle text is detected; the chain check finds a changed, lost, rewritten, duplicated or mis-started bundle; stored bundles changed in the database are found. PB-16 numbers are unique and gap-free through saves, rejected saves, devices and fiscal years (property), with the recovery jump explained by `lost_numbers`. PB-18 whole numbers above 2^53 round-trip as strings, as text and through both databases.
+- Every rejection reason is tested and quarantines without writing anything else: sequence_gap, stale_epoch, epoch ahead, wrong authority node, schema_unsupported, tampered content, wrong prev_hash, unbalanced content, duplicate_number (also within one bundle), a database constraint (whole bundle rolled back), malformed or foreign rows, an unknown node, a reused bundle id, an overflowing projection. An unexpected failure is not swallowed.
+- Crash-point tests: for applying a bundle, for a rejected bundle being quarantined, for posting with a number issued, and for recovering a series, the connection is abandoned after every statement in turn on both databases; each result is wholly done or wholly absent, the integrity checks pass, no number exists without its document, and a retry completes the work once.
+- Golden bundles: 9 stored bundles (two nodes, the 64-bit edge, a return, another device, two fiscal years, an empty document) applied from the files to an empty SQLite and an empty PostgreSQL give the same pinned hash of every table.
+- NOT proven: a real operating-system kill of the process, and power loss with unflushed writes (FI-7); both belong to the simulator (BC-08) and the device lab. The crash tests abandon the connection without commit or rollback, which is what the database sees when a process dies.
+
+**Decisions of detail** (documents 06 and 00 amended: X-16, X-17, DM-28, DM-29)
+- The chain head is `node_chain_heads`, an installation-scope projection: a node's chain crosses companies, which the company wall otherwise forbids reading across.
+- The bundle's own row is written first in step 3 because the rows it owns point at it; rows never carry `bundle_id`.
+- Migration 1 was replaced (its pinned checksums changed) so `audit_events.bundle_id` has a real foreign key. It is frozen from here on: after the first release no applied migration is edited.
+- Projection rows (number series, chain heads, stock balances) get ids derived from the facts, so every node that applies the same bundles has identical rows.
+- PostgreSQL contention: the one-row `apply_guard` makes concurrent applies queue on its row lock; if that matters for the cloud, swap it for a transaction-local setting without changing callers (carried over from BC-03).
+
+**Bugs found by the tests and fixed in this package**
+- A bundle with a non-canonical number (`"007"`) escaped `applyBundle` as an exception instead of being quarantined; all conversion refusals are now one `RowError`.
+- A projection that overflowed 64 bits escaped as a crash that would repeat on every retry (a poison message); it now rejects the bundle.
+- The PostgreSQL pool needed an error listener on every checked-out connection as well as on itself; without it a connection dying between two statements ends the process (found by the crash tests; BC-03's fix covered only idle connections).
+- PostgreSQL returns `jsonb` in its own text form; stored bundles and lost-number keys are read back through the canonical form.
+- The BC-01 lint rule `mandi/company-context` blocked the sanctioned consumer of the scoped handles; it has an explicit allow-list now.
+
+**Known problems and notes for the next packages**
+- No posting rule exists yet; the apply machinery is proved with a trivial test document type. BC-05 onward register real tables through `ApplyRegistry`.
+- Two numbers of one series issued by two concurrent transactions on PostgreSQL would both read the same counter; the second apply is refused as `duplicate_number`. Authoring nodes are single-writer SQLite, so this can only arise for cloud-authored documents (device `CL`); take a row lock there if it matters.
+- Bundles are not signed yet (`signature` is carried and excluded from the hash): the security package fills it in.
+- `npm audit`: 14 moderate findings (dev tools), none high or critical.
+
+**Open stops**
+- Usman: confirm the rounding of negatives with the accountant (X-13). The Windows PostgreSQL start-up failure from BC-03 is still unexplained; the PostgreSQL half is skipped on Windows.
+
+**Next:** BC-05 Test foundations (the seeded world builder, the scenario runner, fixture exporters, the test report generator).

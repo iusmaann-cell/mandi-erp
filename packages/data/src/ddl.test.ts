@@ -162,12 +162,12 @@ describe("migration 1", () => {
         .map((s) => /^CREATE TABLE "(\w+)"/.exec(s)?.[1])
         .filter((n): n is string => n !== undefined);
     expect(names("sqlite")).toEqual(names("postgres"));
-    expect(names("sqlite")).toEqual(["apply_guard", "owner_groups", "nodes", "devices", "companies", "locations", "location_authorities", "fiscal_years", "audit_events"]);
+    expect(names("sqlite")).toEqual(["apply_guard", "owner_groups", "nodes", "devices", "companies", "locations", "bundles", "location_authorities", "fiscal_years", "audit_events"]);
   });
 
-  it("the catalogue is schema_migrations plus those tables", () => {
-    expect(catalogueOf().tables.map((t) => t.name)).toEqual(["schema_migrations", "apply_guard", "owner_groups", "nodes", "devices", "companies", "locations", "location_authorities", "fiscal_years", "audit_events"]);
-    expect(catalogueOf().companyTables()).toEqual(new Set(["companies", "locations", "location_authorities", "fiscal_years", "audit_events"]));
+  it("the catalogue is schema_migrations plus the tables of migrations 1 and 2", () => {
+    expect(catalogueOf().tables.map((t) => t.name)).toEqual(["schema_migrations", "apply_guard", "owner_groups", "nodes", "devices", "companies", "locations", "bundles", "location_authorities", "fiscal_years", "audit_events", "number_series", "lost_numbers", "exceptions", "node_chain_heads"]);
+    expect(catalogueOf().companyTables()).toEqual(new Set(["companies", "locations", "bundles", "location_authorities", "fiscal_years", "audit_events", "number_series", "lost_numbers", "exceptions"]));
   });
 
   it("only audit_events is class 1 here, and every statement of the PostgreSQL migration is a single statement", () => {

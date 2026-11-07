@@ -63,7 +63,7 @@ export function indexesOf(table: TableDef): IndexSpec[] {
   if (company) out.push({ name: `ux_${table.name}__company_id_id`, columns: ["company_id", "id"], unique: true });
   for (const i of table.indexes) {
     const columns = company ? ["company_id", ...i.columns] : i.columns;
-    out.push({ name: `${i.unique ? "ux" : "ix"}_${table.name}__${columns.join("_")}`, columns, unique: i.unique });
+    out.push({ name: i.name ?? `${i.unique ? "ux" : "ix"}_${table.name}__${columns.join("_")}`, columns, unique: i.unique });
   }
   return out;
 }

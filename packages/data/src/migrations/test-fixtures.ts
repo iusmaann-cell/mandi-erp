@@ -16,18 +16,57 @@ export const TEST_PROJECTION: TableDef = table({
   columns: [col.ref("location_id", "locations"), col.int("quantity_milli"), col.ts("as_of_at")],
 });
 
-/** Migration 2 for tests: one class 1 table and one projection table, rendered by the real renderer. */
-export const WITH_TEST_TABLES: readonly Migration[] = [...MIGRATIONS, { id: 2, name: "test_tables", tables: [TEST_FACTS, TEST_PROJECTION] }];
+/**
+ * A trivial document type for proving the bundle machinery before any real document exists (BC-04): a
+ * document with a printed number, its lines, and a stock projection per location.
+ */
+export const TEST_DOCUMENTS: TableDef = table({
+  name: "test_documents",
+  class: 1,
+  scope: "company",
+  columns: [
+    col.text("doc_type"),
+    col.text("doc_no"),
+    col.ref("location_id", "locations"),
+    col.ref("device_id", "devices"),
+    col.text("fiscal_year_code"),
+    col.int("number_seq"),
+    col.date("doc_date"),
+    col.int("total_milli"),
+  ],
+  checks: [{ name: "number_seq_positive", rule: "number_seq >= 1" }],
+  indexes: [{ columns: ["doc_no"], unique: true }],
+});
+export const TEST_DOCUMENT_LINES: TableDef = table({
+  name: "test_document_lines",
+  class: 1,
+  scope: "company",
+  columns: [col.ref("document_id", "test_documents"), col.int("line_no"), col.int("qty_milli")],
+  indexes: [{ columns: ["document_id", "line_no"], unique: true }],
+});
+export const TEST_STOCK: TableDef = table({
+  name: "test_stock",
+  class: "P",
+  scope: "company",
+  columns: [col.ref("location_id", "locations"), col.int("qty_milli")],
+  indexes: [{ columns: ["location_id"], unique: true }],
+});
 
-/** Migration 2 with a changed body, to show that an edited migration is detected. */
-export const MIGRATION_2_EDITED: readonly Migration[] = [...MIGRATIONS, { id: 2, name: "test_tables", tables: [TEST_FACTS, TEST_PROJECTION, table({ name: "test_extra", class: 3, scope: "company", columns: [col.text("note")] })] }];
+/** The migrations plus the trivial document type, as migration 3. */
+export const WITH_TEST_DOCUMENTS: readonly Migration[] = [...MIGRATIONS, { id: 3, name: "test_documents", tables: [TEST_DOCUMENTS, TEST_DOCUMENT_LINES, TEST_STOCK] }];
+
+/** Migration 3 for tests: one class 1 table and one projection table, rendered by the real renderer. */
+export const WITH_TEST_TABLES: readonly Migration[] = [...MIGRATIONS, { id: 3, name: "test_tables", tables: [TEST_FACTS, TEST_PROJECTION] }];
+
+/** Migration 3 with a changed body, to show that an edited migration is detected. */
+export const MIGRATION_2_EDITED: readonly Migration[] = [...MIGRATIONS, { id: 3, name: "test_tables", tables: [TEST_FACTS, TEST_PROJECTION, table({ name: "test_extra", class: 3, scope: "company", columns: [col.text("note")] })] }];
 
 /**
- * Migration 2 that damages the schema in every way the schema test must catch. The catalogue lists
+ * Migration 3 that damages the schema in every way the schema test must catch. The catalogue lists
  * `bad_facts` (class 1) and `bad_projection` (class P) correctly, then their triggers are dropped.
  */
 const BAD: Migration = {
-  id: 2,
+  id: 3,
   name: "deliberately_bad",
   tables: [
     table({ name: "bad_facts", class: 1, scope: "company", columns: [col.text("note")] }),

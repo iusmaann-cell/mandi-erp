@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import type { Clock } from "@mandi/core";
 import { type Catalogue } from "./catalogue/define";
 import { createPostgresPool, postgresDialect, type PostgresConnection } from "./drivers/postgres";
+import type { DriverHooks } from "./drivers/hooks";
 import { sqliteDialect } from "./drivers/sqlite";
 import { CompanyContextError } from "./errors";
 import { readSchema, type SchemaSnapshot } from "./introspection/snapshot";
@@ -14,6 +15,13 @@ import type { DbKind } from "./types";
 
 export interface CompanyContext {
   readonly companyId: string;
+}
+
+/** The two handles of one transaction: the company's rows, and the installation and system tables, on one connection. */
+export interface TxHandles {
+  readonly companyId: string;
+  readonly scoped: ScopedDb;
+  readonly installation: InstallationDb;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -32,6 +40,11 @@ export interface DataStore {
   readonly catalogue: Catalogue;
   scoped(context: CompanyContext): ScopedDb;
   installation(): InstallationDb;
+  /**
+   * One transaction with both handles. The posting transaction of the engine and `applyBundle` use it so a
+   * company's rows and the node's chain head change together or not at all.
+   */
+  transaction<T>(context: CompanyContext, work: (tx: TxHandles) => Promise<T>): Promise<T>;
   migrate(): Promise<MigrationResult>;
   readSchema(): Promise<SchemaSnapshot>;
   close(): Promise<void>;
@@ -56,16 +69,31 @@ class Store implements DataStore {
     this.#onClose = onClose;
   }
 
-  scoped(context: CompanyContext): ScopedDb {
+  #validCompany(context: CompanyContext): string {
     const id = (context as Partial<CompanyContext> | undefined)?.companyId;
     if (typeof id !== "string" || !UUID.test(id)) {
       throw new CompanyContextError("a company context with a valid company id is required");
     }
-    return this.#root.withPlugin(companyScopePlugin(id, this.#companyTables)) as ScopedDb;
+    return id;
+  }
+
+  scoped(context: CompanyContext): ScopedDb {
+    return this.#root.withPlugin(companyScopePlugin(this.#validCompany(context), this.#companyTables)) as ScopedDb;
   }
 
   installation(): InstallationDb {
     return this.#root.withPlugin(installationScopePlugin(this.#companyTables)) as InstallationDb;
+  }
+
+  transaction<T>(context: CompanyContext, work: (tx: TxHandles) => Promise<T>): Promise<T> {
+    const companyId = this.#validCompany(context);
+    return this.#root.transaction().execute((trx) =>
+      work({
+        companyId,
+        scoped: trx.withPlugin(companyScopePlugin(companyId, this.#companyTables)) as ScopedDb,
+        installation: trx.withPlugin(installationScopePlugin(this.#companyTables)) as InstallationDb,
+      }),
+    );
   }
 
   migrate(): Promise<MigrationResult> {
@@ -87,11 +115,13 @@ export interface SqliteStoreOptions {
   readonly path: string;
   readonly clock: Clock;
   readonly migrations?: readonly Migration[];
+  /** Test seam (drivers/hooks.ts). */
+  readonly hooks?: DriverHooks;
 }
 
 /** For site nodes, Windows and Android stand-alone devices and tests (document 05, section 11). */
 export function createSqliteStore(options: SqliteStoreOptions): DataStore {
-  return new Store("sqlite", sqliteDialect(options.path), options.clock, options.migrations ?? MIGRATIONS, () => Promise.resolve());
+  return new Store("sqlite", sqliteDialect(options.path, options.hooks), options.clock, options.migrations ?? MIGRATIONS, () => Promise.resolve());
 }
 
 export interface PostgresStoreOptions {

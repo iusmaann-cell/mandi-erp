@@ -48,6 +48,8 @@ export interface Check {
 export interface IndexDef {
   readonly columns: readonly string[];
   readonly unique: boolean;
+  /** For an index whose generated name would be longer than PostgreSQL's 63 characters. */
+  readonly name?: string;
 }
 
 export interface TableDef {

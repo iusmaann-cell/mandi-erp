@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import { describe, expect, it } from "vitest";
 import { createPostgresPool } from "./postgres";
 
@@ -17,5 +18,18 @@ describe("createPostgresPool", () => {
     expect(() => without.emit("error", new Error("terminating connection"))).not.toThrow();
     await withHandler.end();
     await without.end();
+  });
+});
+
+describe("every connection the pool makes is covered too", () => {
+  it("a connection that dies while a request holds it (between two statements) cannot crash the process", async () => {
+    const seen: string[] = [];
+    const pool = createPostgresPool({ connectionString: "postgres://nobody@127.0.0.1:1/none", onIdleError: (e) => seen.push(e.message) });
+    const client = new EventEmitter();
+    pool.emit("connect", client); // what pg does for each new connection
+    expect(client.listenerCount("error")).toBe(1);
+    expect(() => client.emit("error", new Error("Connection terminated unexpectedly"))).not.toThrow();
+    expect(seen).toEqual(["Connection terminated unexpectedly"]);
+    await pool.end();
   });
 });

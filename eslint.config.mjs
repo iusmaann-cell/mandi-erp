@@ -62,7 +62,8 @@ export default tseslint.config(
     rules: {
       // SQL text only in migrations, plus two files that read or configure the database itself (document 08, SEC-5)
       "mandi/no-raw-sql": ["error", { allowPaths: ["packages/data/src/introspection/", "packages/data/src/drivers/"] }],
-      "mandi/company-context": "error",
+      // query builders only in packages/data and the sanctioned consumers of its scoped handles (BC-04: sync)
+      "mandi/company-context": ["error", { allowPaths: ["packages/sync/"] }],
       "mandi/no-ambient-time-random": ["error", { allowFiles: REAL_TIME_AND_RANDOM }],
     },
   },

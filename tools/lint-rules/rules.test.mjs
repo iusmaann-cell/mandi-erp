@@ -110,6 +110,7 @@ tester.run("company-context", companyContext, {
   valid: [
     { code: "db.selectFrom('items');", filename: "packages/data/src/q.js" },
     { code: "list.map(x => x);", filename: ENGINE },
+    { code: "tx.scoped.selectFrom('bundles');", filename: "packages/sync/src/apply.js", options: [{ allowPaths: ["packages/sync/"] }] },
     { code: "const t = tracker.selectFromX();", filename: ENGINE },
   ],
   invalid: [
@@ -117,6 +118,8 @@ tester.run("company-context", companyContext, {
     { code: "trx.insertInto('items').values(v);", filename: "packages/server/src/x.js", errors: [{ messageId: "outsideData" }] },
     { code: "this.db.updateTable('items');", filename: ENGINE, errors: [{ messageId: "outsideData" }] },
     { code: "db.deleteFrom('items');", filename: ENGINE, errors: [{ messageId: "outsideData" }] },
+    { code: "tx.scoped.selectFrom('bundles');", filename: "packages/core/src/x.js", options: [{ allowPaths: ["packages/sync/"] }], errors: [{ messageId: "outsideData" }] }, // the engine may never touch a database
+    { code: "tx.scoped.selectFrom('bundles');", filename: "packages/ui/src/x.js", options: [{ allowPaths: ["packages/sync/"] }], errors: [{ messageId: "outsideData" }] },
   ],
 });
 

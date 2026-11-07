@@ -59,23 +59,26 @@ const codeOf = async (work: Promise<unknown>): Promise<string> => {
 const now = new Date(createTestRuntime({ seed: "contract" }).clock.nowMs()).toISOString();
 
 describe.each(KINDS)("migrations on %s", (kind) => {
-  it("applies migration 1 and records its name, checksum and time", async () => {
+  it("applies migrations 1 and 2 and records their names, checksums and time", async () => {
     const store = track((await database(kind)).open());
-    expect(await store.migrate()).toEqual({ applied: [1], alreadyApplied: [] });
-    const rows = await store.installation().selectFrom("schema_migrations").selectAll().execute();
-    expect(rows).toHaveLength(1);
+    expect(await store.migrate()).toEqual({ applied: [1, 2], alreadyApplied: [] });
+    const rows = await store.installation().selectFrom("schema_migrations").selectAll().orderBy("id").execute();
+    expect(rows).toHaveLength(2);
     expect(rows[0]).toMatchObject({ id: 1n, name: "platform_tables", applied_at: now });
     expect(rows[0]?.checksum).toBe(checksumOf(MIGRATIONS[0]!, kind, []));
+    expect(rows[1]).toMatchObject({ id: 2n, name: "numbering_exceptions_and_chain_heads", applied_at: now });
+    expect(rows[1]?.checksum).toBe(checksumOf(MIGRATIONS[1]!, kind, [MIGRATIONS[0]!]));
   });
 
   it("running again changes nothing", async () => {
     const store = await fresh(kind);
-    expect(await store.migrate()).toEqual({ applied: [], alreadyApplied: [1] });
-    expect(await store.installation().selectFrom("schema_migrations").select("id").execute()).toHaveLength(1);
+    expect(await store.migrate()).toEqual({ applied: [], alreadyApplied: [1, 2] });
+    expect(await store.installation().selectFrom("schema_migrations").select("id").execute()).toHaveLength(2);
   });
 
-  it("golden checksum of migration 1: it must never be edited after release; change means a new migration", () => {
-    expect(checksumOf(MIGRATIONS[0]!, kind, [])).toBe(GOLDEN_CHECKSUM[kind]);
+  it("golden checksums of migrations 1 and 2: never edited after release; a change means a new migration", () => {
+    expect(checksumOf(MIGRATIONS[0]!, kind, [])).toBe(GOLDEN_CHECKSUM[kind][0]);
+    expect(checksumOf(MIGRATIONS[1]!, kind, [MIGRATIONS[0]!])).toBe(GOLDEN_CHECKSUM[kind][1]);
   });
 
   it("a later migration is applied alone, on top of the earlier one, by a newer program", async () => {
@@ -83,7 +86,7 @@ describe.each(KINDS)("migrations on %s", (kind) => {
     const old = track(db.open());
     await old.migrate();
     const newer = track(db.open({ migrations: WITH_TEST_TABLES }));
-    expect(await newer.migrate()).toEqual({ applied: [2], alreadyApplied: [1] });
+    expect(await newer.migrate()).toEqual({ applied: [3], alreadyApplied: [1, 2] });
     const names = (await newer.readSchema()).tables.map((t) => t.name);
     expect(names).toContain("test_facts");
     expect(names).toContain("test_projection");
@@ -116,15 +119,15 @@ describe.each(KINDS)("migrations on %s", (kind) => {
 
   it("a gap in the applied migrations is refused", async () => {
     const store = await fresh(kind);
-    await store.installation().insertInto("schema_migrations").values({ id: 3n, name: "x", checksum: "y", applied_at: now }).execute();
+    await store.installation().insertInto("schema_migrations").values({ id: 4n, name: "x", checksum: "y", applied_at: now }).execute();
     expect(await codeOf(store.migrate())).toBe("gap");
   });
 });
 
-// Checksums of migration 1 as first released. Pinned so that an edit to an applied migration is a visible, deliberate act.
-const GOLDEN_CHECKSUM: Record<DbKind, string> = {
-  sqlite: "b36ae045b72c812d2a9ca5534966e985fd3bb262ba294be4c544ec33715c980f",
-  postgres: "0bf4fa06c2fb2f13bcefc479f972f8cadd6956ad30feb658a5b2352699af5d43",
+// Checksums of migrations 1 and 2 as of BC-04 (migration 1 was replaced once, before any release, to add bundles). Pinned so that an edit to an applied migration is a visible, deliberate act.
+const GOLDEN_CHECKSUM: Record<DbKind, readonly [string, string]> = {
+  sqlite: ["723c0bd11300752ce46b4504967c4a2094a2f6775610cc9213491d0fc162bdc3", "64e15d86953c1a827ccec21370e88a4802da8be307cc449222bbd744b0b3e3fb"],
+  postgres: ["5e3e8ed7991475087299b94b54c2de89d4cb64f576e133c2cbd4d62bdc26b99f", "9614fac493cbfe774f43e076cd7bb49f70d476a6e59439ea35bd40fc6e28b441"],
 };
 
 describe.each(KINDS)("the schema test on %s (document 06, section 12)", (kind) => {
@@ -214,7 +217,7 @@ describe.each(KINDS)("class 1 facts are never changed (document 06, D-2; SA-18) 
     const world = await seedWorld(store, rt);
     const db = store.scoped({ companyId: world.a.id });
     const id = rt.ids.newId();
-    await db.insertInto("audit_events").values({ id, bundle_id: rt.ids.newId(), created_at: now, entity: "locations", entity_id: world.a.locationId, action: "created", detail_json: '{"b":1,"a":2}' }).execute();
+    await db.insertInto("audit_events").values({ id, bundle_id: world.a.bundleId, created_at: now, entity: "locations", entity_id: world.a.locationId, action: "created", detail_json: '{"b":1,"a":2}' }).execute();
     return { store, world, db, id };
   }
 
@@ -240,7 +243,7 @@ describe.each(KINDS)("class 1 facts are never changed (document 06, D-2; SA-18) 
   it("an upsert that would overwrite a fact is refused too", async () => {
     const { db, id, world } = await withEvent();
     await expect(
-      db.insertInto("audit_events").values({ id, bundle_id: "0195f3a4-0000-7000-8000-0000000000ff", created_at: now, entity: "x", entity_id: world.a.locationId, action: "overwritten" }).onConflict((oc) => oc.column("id").doUpdateSet({ action: "overwritten" })).execute(),
+      db.insertInto("audit_events").values({ id, bundle_id: world.a.bundleId, created_at: now, entity: "x", entity_id: world.a.locationId, action: "overwritten" }).onConflict((oc) => oc.column("id").doUpdateSet({ action: "overwritten" })).execute(),
     ).rejects.toThrow(/append-only/);
   });
 
@@ -249,7 +252,7 @@ describe.each(KINDS)("class 1 facts are never changed (document 06, D-2; SA-18) 
     const rt = createTestRuntime({ seed: "events-2" });
     await expect(
       db.transaction().execute(async (trx) => {
-        await trx.insertInto("audit_events").values({ id: rt.ids.newId(), bundle_id: rt.ids.newId(), created_at: now, entity: "x", entity_id: world.a.locationId, action: "second" }).execute();
+        await trx.insertInto("audit_events").values({ id: rt.ids.newId(), bundle_id: world.a.bundleId, created_at: now, entity: "x", entity_id: world.a.locationId, action: "second" }).execute();
         await trx.deleteFrom("audit_events").execute();
       }),
     ).rejects.toThrow(/append-only/);
@@ -455,7 +458,7 @@ describe.each(KINDS)("the apply guard and projection tables (document 06, D-3) o
   it("a class 1 test table refuses update and delete as every class 1 table does", async () => {
     const { raw, rt, w } = await setup();
     const id = rt.ids.newId();
-    await raw.insertInto("test_facts").values({ id, company_id: w.a.id, bundle_id: rt.ids.newId(), created_at: now, note: "n" }).execute();
+    await raw.insertInto("test_facts").values({ id, company_id: w.a.id, bundle_id: w.a.bundleId, created_at: now, note: "n" }).execute();
     await expect(raw.updateTable("test_facts").set({ note: "m" }).execute()).rejects.toThrow(/append-only/);
     await expect(raw.deleteFrom("test_facts").execute()).rejects.toThrow(/append-only/);
   });
@@ -483,7 +486,7 @@ describe.each(KINDS)("values read back the same way (physical type map) on %s", 
     const row = decodeRow(catalogueOf(), "companies", raw);
     expect(row).toMatchObject({ registration_date: "2026-06-30", is_active: false, updated_at: "2026-07-01T12:34:56.789Z", id: w.a.id, company_id: w.a.id, version: 1n, fiscal_year_start_month: 7n });
     const id = rt.ids.newId();
-    await db.insertInto("audit_events").values({ id, bundle_id: rt.ids.newId(), created_at: now, entity: "e", entity_id: w.a.locationId, action: "a", detail_json: '{ "b": 1,  "a": [1, 2] }' }).execute();
+    await db.insertInto("audit_events").values({ id, bundle_id: w.a.bundleId, created_at: now, entity: "e", entity_id: w.a.locationId, action: "a", detail_json: '{ "b": 1,  "a": [1, 2] }' }).execute();
     const event = decodeRow(catalogueOf(), "audit_events", await db.selectFrom("audit_events").selectAll().executeTakeFirstOrThrow());
     expect(event.detail_json).toBe('{"a":[1,2],"b":1}');
   });
@@ -493,7 +496,7 @@ describe.each(KINDS)("values read back the same way (physical type map) on %s", 
     const rt = createTestRuntime({ seed: "values-3" });
     const w = await seedWorld(store, rt);
     const db = store.scoped({ companyId: w.a.id });
-    await expect(db.insertInto("audit_events").values({ id: rt.ids.newId(), bundle_id: rt.ids.newId(), created_at: now, entity: "e", entity_id: w.a.locationId, action: "a", detail_json: "{bad" }).execute()).rejects.toThrow();
+    await expect(db.insertInto("audit_events").values({ id: rt.ids.newId(), bundle_id: w.a.bundleId, created_at: now, entity: "e", entity_id: w.a.locationId, action: "a", detail_json: "{bad" }).execute()).rejects.toThrow();
   });
 });
 

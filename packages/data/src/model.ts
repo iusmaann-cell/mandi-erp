@@ -113,6 +113,69 @@ export interface AuditEventsTable {
   created_at: Ts;
 }
 
+export interface BundlesTable {
+  id: Id;
+  company_id: Generated<Id>;
+  location_id: Id | null;
+  node_id: Id;
+  epoch: bigint;
+  node_seq: bigint;
+  prev_hash: string;
+  hash: string;
+  schema_version: bigint;
+  kind: "document" | "system" | "import";
+  payload_json: JsonText;
+  created_at: Ts;
+  state: "pending" | "acked" | "accepted" | "quarantined";
+  central_seq: bigint | null;
+  acked_at: Ts | null;
+  signature: string | null;
+}
+
+export interface NumberSeriesTable {
+  id: Id;
+  company_id: Generated<Id>;
+  location_id: Id;
+  device_id: Id;
+  doc_type: string;
+  fiscal_year_code: string;
+  prefix: string;
+  padding: Generated<bigint>;
+  next_number: Generated<bigint>;
+  last_issued_at: Ts | null;
+}
+
+export interface LostNumbersTable {
+  id: Id;
+  company_id: Generated<Id>;
+  series_key_json: JsonText;
+  number_from: bigint;
+  number_to: bigint;
+  reason: "lost_device" | "restore";
+  recorded_at: Ts;
+}
+
+export interface ExceptionsTable {
+  id: Id;
+  company_id: Generated<Id>;
+  bundle_id: Id | null;
+  reason_code: "unknown_item" | "period_locked" | "stale_epoch" | "schema_unsupported" | "unbalanced_journal" | "sequence_gap" | "duplicate_number" | "other";
+  detail: string;
+  state: Generated<"open" | "resolved">;
+  created_at: Ts;
+  resolved_by_user_id: Id | null;
+  resolved_at: Ts | null;
+  resolution_note: string | null;
+}
+
+export interface NodeChainHeadsTable {
+  id: Id;
+  node_id: Id;
+  last_seq: bigint;
+  last_hash: string;
+  updated_at: Ts;
+}
+
 export interface ApplyGuardTable {
   id: bigint;
   is_open: Generated<boolean>;
@@ -134,6 +197,11 @@ export interface PlatformDatabase {
   location_authorities: LocationAuthoritiesTable;
   fiscal_years: FiscalYearsTable;
   audit_events: AuditEventsTable;
+  bundles: BundlesTable;
+  number_series: NumberSeriesTable;
+  lost_numbers: LostNumbersTable;
+  exceptions: ExceptionsTable;
+  node_chain_heads: NodeChainHeadsTable;
   apply_guard: ApplyGuardTable;
   schema_migrations: SchemaMigrationsTable;
 }

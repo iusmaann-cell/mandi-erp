@@ -1,0 +1,9 @@
+{
+  "tables": {
+    "test_documents": "1292b36beb7f25d2cdaae3bacaac30d01ab1f0a80837e0042b4b2971b145bf34",
+    "test_document_lines": "1d763db72dec301060ce6e0e06fbf83e355ebc813baea969d788db4f97d8a63e",
+    "number_series": "807ff7692dc4561ddc8f0ff8a7bd3a888bba0cb016d8983a28d7f693a9d073fd",
+    "test_stock": "b29cda92a56a126897b9cd56c33ffd227e3adcdf723f15d0252ddf152f53d47e",
+    "bundles": "612915e5268ff8ccfc60756727d95703c80db478a40102f5cea9b5098c12c112"
+  }
+}

@@ -76,6 +76,11 @@ const sample: { [K in keyof PlatformDatabase]: Selectable<PlatformDatabase[K]> }
   location_authorities: { id: "", company_id: "", location_id: "", node_id: "", epoch: 1n, started_at: "", ended_at: null, reason: null, version: 1n, updated_at: "", updated_by_user_id: null },
   fiscal_years: { id: "", company_id: "", code: "", start_date: "", end_date: "", status: "open", version: 1n, updated_at: "", updated_by_user_id: null },
   audit_events: { id: "", company_id: "", user_id: null, node_id: null, device_id: null, entity: "", entity_id: "", action: "", detail_json: "{}", bundle_id: "", created_at: "" },
+  bundles: { id: "", company_id: "", location_id: null, node_id: "", epoch: 1n, node_seq: 1n, prev_hash: "", hash: "", schema_version: 1n, kind: "document", payload_json: "{}", created_at: "", state: "pending", central_seq: null, acked_at: null, signature: null },
+  number_series: { id: "", company_id: "", location_id: "", device_id: "", doc_type: "", fiscal_year_code: "", prefix: "", padding: 6n, next_number: 1n, last_issued_at: null },
+  lost_numbers: { id: "", company_id: "", series_key_json: "{}", number_from: 1n, number_to: 1n, reason: "restore", recorded_at: "" },
+  exceptions: { id: "", company_id: "", bundle_id: null, reason_code: "other", detail: "", state: "open", created_at: "", resolved_by_user_id: null, resolved_at: null, resolution_note: null },
+  node_chain_heads: { id: "", node_id: "", last_seq: 1n, last_hash: "", updated_at: "" },
   apply_guard: { id: 1n, is_open: false },
   schema_migrations: { id: 1n, name: "", checksum: "", applied_at: "" },
 };
